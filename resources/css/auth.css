@@ -1,0 +1,635 @@
+/*
+|--------------------------------------------------------------------------
+| BLODORA AUTH SYSTEM
+|--------------------------------------------------------------------------
+*/
+
+:root {
+    --auth-bg: #f8f9fa;
+    --auth-text: #171717;
+    --auth-muted: #777;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| BASE
+|--------------------------------------------------------------------------
+*/
+
+html,
+body {
+    min-height: 100%;
+}
+
+.auth-page {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: var(--auth-bg);
+    color: var(--auth-text);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| BACKGROUND BLOOD EFFECT
+|--------------------------------------------------------------------------
+*/
+
+.auth-background-effect {
+    position: fixed;
+    width: 520px;
+    height: 520px;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(70px);
+    opacity: 0.35;
+    z-index: 0;
+}
+
+.auth-blood-left {
+    left: -250px;
+    bottom: -260px;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(193, 18, 31, 0.75) 0%,
+            rgba(193, 18, 31, 0.35) 35%,
+            rgba(193, 18, 31, 0) 72%
+        );
+    animation: bloodFloatLeft 8s ease-in-out infinite alternate;
+}
+
+.auth-blood-right {
+    right: -250px;
+    top: -260px;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(193, 18, 31, 0.75) 0%,
+            rgba(193, 18, 31, 0.35) 35%,
+            rgba(193, 18, 31, 0) 72%
+        );
+    animation: bloodFloatRight 10s ease-in-out infinite alternate;
+}
+
+@keyframes bloodFloatLeft {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(35px, -25px) scale(1.08);
+    }
+}
+
+@keyframes bloodFloatRight {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(-30px, 30px) scale(1.1);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MAIN WRAPPER
+|--------------------------------------------------------------------------
+*/
+
+.auth-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 90px 20px 50px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTH CARD
+|--------------------------------------------------------------------------
+*/
+
+.auth-card {
+    position: relative;
+    width: 100%;
+    max-width: 470px;
+    padding: 42px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    animation: cardEnter 0.8s ease forwards;
+}
+
+@keyframes cardEnter {
+    from {
+        opacity: 0;
+        transform: translateY(35px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTH TOPBAR
+|--------------------------------------------------------------------------
+*/
+
+.auth-topbar {
+    position: fixed;
+    top: 28px;
+    left: 28px;
+    right: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+}
+
+.auth-switch {
+    font-size: 14px;
+    color: #777;
+}
+
+.auth-back {
+    text-decoration: none;
+    color: #ffffff;
+    background: rgba(20, 20, 20, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    transition:
+        color 0.3s ease,
+        background 0.3s ease,
+        border-color 0.3s ease,
+        transform 0.3s ease;
+}
+
+.auth-back:hover {
+    color: #ffffff;
+    background: var(--blodora-red);
+    border-color: var(--blodora-red);
+    transform: translateX(-3px);
+}
+
+.auth-register-link,
+.auth-login-link {
+    color: var(--blodora-red);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.auth-register-link:hover,
+.auth-login-link:hover {
+    color: var(--blodora-red-dark);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGO & HEADER
+|--------------------------------------------------------------------------
+*/
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeUp 0.7s ease 0.15s both;
+}
+
+.auth-logo {
+    width: 76px;
+    height: 76px;
+    object-fit: contain;
+    margin-bottom: 20px;
+    animation: logoEnter 0.8s ease 0.1s both;
+}
+
+@keyframes logoEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.75);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.auth-title {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--auth-text);
+}
+
+.auth-subtitle {
+    margin-top: 8px;
+    margin-bottom: 0;
+    font-size: 15px;
+    color: var(--auth-muted);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FORM
+|--------------------------------------------------------------------------
+*/
+
+.auth-form {
+    animation: fadeUp 0.7s ease 0.3s both;
+}
+
+.auth-field {
+    margin-bottom: 20px;
+}
+
+.auth-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #303030;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 13px 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    background: rgba(255, 255, 255, 0.42);
+    color: #171717;
+    outline: none;
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        background 0.3s ease,
+        transform 0.2s ease;
+}
+
+.auth-input:focus {
+    border-color: var(--blodora-red);
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 0 0 4px rgba(193, 18, 31, 0.1);
+    transform: translateY(-1px);
+}
+
+.auth-input::placeholder {
+    color: #999;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| PASSWORD
+|--------------------------------------------------------------------------
+*/
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper .auth-input {
+    padding-right: 48px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #777;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: var(--blodora-red);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| REMEMBER + FORGOT
+|--------------------------------------------------------------------------
+*/
+
+.auth-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    font-size: 13px;
+}
+
+.auth-remember {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #666;
+}
+
+.auth-remember input {
+    accent-color: var(--blodora-red);
+}
+
+.auth-forgot {
+    text-decoration: none;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.auth-forgot:hover {
+    color: var(--blodora-red);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| PRIMARY BUTTON
+|--------------------------------------------------------------------------
+*/
+
+.btn-blodora {
+    position: relative;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 20px;
+    background: var(--blodora-red);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.btn-blodora:hover {
+    background: var(--blodora-red-dark);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(193, 18, 31, 0.2);
+}
+
+.btn-blodora:active {
+    transform: translateY(0);
+}
+
+.btn-blodora.is-loading {
+    cursor: wait;
+    opacity: 0.88;
+}
+
+.btn-blodora:disabled {
+    pointer-events: none;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOADING
+|--------------------------------------------------------------------------
+*/
+
+.auth-loading-content,
+.btn-loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+}
+
+.auth-spinner {
+    width: 17px;
+    height: 17px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: authSpin 0.7s linear infinite;
+}
+
+@keyframes authSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DIVIDER
+|--------------------------------------------------------------------------
+*/
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 25px 0;
+    color: #999;
+    font-size: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GOOGLE BUTTON
+|--------------------------------------------------------------------------
+*/
+
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-radius: 12px;
+    padding: 12px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.35);
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease,
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.btn-google:hover {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(0, 0, 0, 0.18);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.google-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER
+|--------------------------------------------------------------------------
+*/
+
+.auth-footer {
+    text-align: center;
+    margin-top: 22px;
+    color: #777;
+    font-size: 13px;
+}
+
+.auth-footer a {
+    color: var(--blodora-red);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    color: var(--blodora-red-dark);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| VALIDATION / SUCCESS
+|--------------------------------------------------------------------------
+*/
+
+.auth-error {
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    background: rgba(193, 18, 31, 0.08);
+    border: 1px solid rgba(193, 18, 31, 0.18);
+    color: var(--blodora-red);
+    font-size: 13px;
+    animation: errorShake 0.45s ease;
+}
+
+.auth-success {
+    padding: 13px 15px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    background: rgba(25, 135, 84, 0.10);
+    border: 1px solid rgba(25, 135, 84, 0.20);
+    color: #146c43;
+    font-size: 13px;
+    animation: fadeUp 0.45s ease both;
+}
+
+@keyframes errorShake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GENERAL ANIMATION
+|--------------------------------------------------------------------------
+*/
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESPONSIVE AUTH
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 576px) {
+    .auth-wrapper {
+        padding: 25px 15px;
+    }
+
+    .auth-card {
+        padding: 30px 22px;
+        border-radius: 22px;
+        margin-top: 35px;
+    }
+
+    .auth-title {
+        font-size: 26px;
+    }
+
+    .auth-topbar {
+        top: 18px;
+        left: 18px;
+        right: 18px;
+        align-items: flex-start;
+    }
+
+    .auth-switch {
+        font-size: 12px;
+        text-align: right;
+    }
+
+    .auth-background-effect {
+        width: 360px;
+        height: 360px;
+    }
+}

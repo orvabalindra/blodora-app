@@ -1,0 +1,26 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+@import './auth.css';
+@import './landing.css';
+@import './admin.css';
+
+/*
+|--------------------------------------------------------------------------
+| BLODORA GLOBAL
+|--------------------------------------------------------------------------
+*/
+
+:root {
+    --blodora-red: #c1121f;
+    --blodora-red-dark: #8f0d17;
+    --blodora-red-light: #e63946;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}

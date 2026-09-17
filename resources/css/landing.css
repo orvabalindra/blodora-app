@@ -1,0 +1,644 @@
+/*
+|--------------------------------------------------------------------------
+| BLODORA LANDING PAGE
+|--------------------------------------------------------------------------
+*/
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    color: #202832;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HERO
+|--------------------------------------------------------------------------
+*/
+
+.hero {
+    min-height: 100vh;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| NAVBAR
+|--------------------------------------------------------------------------
+*/
+
+.blodora-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    padding: 28px 0;
+    background: transparent;
+    transition:
+        background 0.3s ease,
+        padding 0.3s ease,
+        box-shadow 0.3s ease,
+        backdrop-filter 0.3s ease;
+}
+
+.blodora-navbar.scrolled {
+    padding: 16px 0;
+    background: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGO
+|--------------------------------------------------------------------------
+*/
+
+.blodora-logo {
+    width: 150px;
+    height: auto;
+    transition: width 0.3s ease;
+}
+
+.blodora-navbar.scrolled .blodora-logo {
+    width: 130px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MENU
+|--------------------------------------------------------------------------
+*/
+
+.blodora-navbar .nav-link {
+    position: relative;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 0 !important;
+    transition:
+        color 0.3s ease,
+        font-weight 0.3s ease;
+}
+
+.blodora-navbar .nav-link:hover {
+    color: #d9252a;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ACTIVE MENU
+|--------------------------------------------------------------------------
+*/
+
+.blodora-navbar .nav-link.active {
+    color: #d9252a;
+    font-weight: 600;
+}
+
+.blodora-navbar .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -15px;
+    height: 2px;
+    background: #d9252a;
+    border-radius: 10px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGIN BUTTON
+|--------------------------------------------------------------------------
+*/
+
+.btn-login {
+    min-width: 96px;
+    padding: 9px 24px;
+    border: 1px solid rgba(217, 37, 42, 0.5);
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.20);
+    color: #d9252a;
+    font-size: 14px;
+    font-weight: 600;
+    transition:
+        background 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease,
+        transform 0.3s ease;
+}
+
+.btn-login:hover {
+    background: #d9252a;
+    border-color: #d9252a;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.blodora-navbar.scrolled .btn-login {
+    background: #d9252a;
+    border-color: #d9252a;
+    color: white;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HERO CONTENT
+|--------------------------------------------------------------------------
+*/
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 500px;
+    padding-top: 60px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HERO SUBTITLE
+|--------------------------------------------------------------------------
+*/
+
+.hero-subtitle {
+    display: block;
+    margin-bottom: 18px;
+    color: #7b8491;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 4px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HERO TITLE
+|--------------------------------------------------------------------------
+*/
+
+.hero-title {
+    margin: 0;
+    color: #202832;
+    font-size: 54px;
+    line-height: 1.05;
+    font-weight: 800;
+}
+
+.hero-title span {
+    color: #d9252a;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HERO DESCRIPTION
+|--------------------------------------------------------------------------
+*/
+
+.hero-description {
+    max-width: 380px;
+    margin-top: 25px;
+    color: #737b87;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DONOR BUTTON
+|--------------------------------------------------------------------------
+*/
+
+.btn-donor {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 28px;
+    padding: 13px 22px;
+    background: #d9252a;
+    color: white;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.btn-donor:hover {
+    background: #b91c1c;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(217, 37, 42, 0.20);
+}
+
+.btn-donor span {
+    font-size: 20px;
+    line-height: 1;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GENERAL SECTION
+|--------------------------------------------------------------------------
+*/
+
+.donor-section,
+.stock-section,
+.about-section {
+    padding: 110px 0;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DONOR SECTION
+|--------------------------------------------------------------------------
+*/
+
+.donor-section {
+    background: #ffffff;
+}
+
+.section-content {
+    max-width: 1000px;
+    margin: auto;
+    text-align: center;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| SECTION LABEL
+|--------------------------------------------------------------------------
+*/
+
+.section-label {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: #d9252a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HEADING
+|--------------------------------------------------------------------------
+*/
+
+.section-content h2,
+.section-heading h2,
+.about-content h2 {
+    margin-bottom: 20px;
+    color: #202832;
+    font-size: 42px;
+    font-weight: 800;
+}
+
+.section-content h2 span,
+.section-heading h2 span,
+.about-content h2 span {
+    color: #d9252a;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| PARAGRAPH
+|--------------------------------------------------------------------------
+*/
+
+.section-content > p {
+    max-width: 650px;
+    margin: 0 auto 50px;
+    color: #737b87;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DONOR CARDS
+|--------------------------------------------------------------------------
+*/
+
+.donor-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+.info-card {
+    padding: 35px 25px;
+    background: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.card-icon {
+    margin-bottom: 15px;
+    font-size: 30px;
+}
+
+.info-card h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.info-card p {
+    margin: 0;
+    color: #737b87;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.section-button {
+    margin-top: 35px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| STOK DARAH
+|--------------------------------------------------------------------------
+*/
+
+.stock-section {
+    background: #f7f8fa;
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: 55px;
+}
+
+.section-heading p {
+    color: #737b87;
+    font-size: 16px;
+}
+
+.stock-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+.blood-card {
+    position: relative;
+    padding: 35px 25px;
+    background: white;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.blood-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.blood-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 75px;
+    height: 75px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: #d9252a;
+    color: white;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.blood-card h3 {
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.blood-card p {
+    margin: 0;
+    color: #737b87;
+    font-size: 14px;
+}
+
+.stock-status {
+    margin-top: 15px;
+    color: #22c55e;
+    font-size: 13px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TENTANG
+|--------------------------------------------------------------------------
+*/
+
+.about-section {
+    background: white;
+}
+
+.about-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+}
+
+.about-content p {
+    color: #737b87;
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| FOOTER
+|--------------------------------------------------------------------------
+*/
+
+.blodora-footer {
+    padding: 50px 0 25px;
+    background: #202832;
+    color: white;
+}
+
+.footer-content {
+    text-align: center;
+    padding-bottom: 35px;
+}
+
+.footer-logo {
+    width: 140px;
+    filter: brightness(0) invert(1);
+    margin-bottom: 15px;
+}
+
+.footer-content p {
+    margin: 0;
+    color: #b7bec8;
+    font-size: 14px;
+}
+
+.footer-bottom {
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    color: #8e97a3;
+    font-size: 13px;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESPONSIVE TABLET
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 991px) {
+    .blodora-navbar {
+        padding: 20px 0;
+    }
+
+    .blodora-navbar.scrolled {
+        padding: 15px 0;
+    }
+
+    .blodora-navbar .navbar-collapse {
+        margin-top: 15px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .blodora-navbar .nav-link {
+        padding: 10px 0 !important;
+    }
+
+    .blodora-navbar .nav-link.active::after {
+        display: none;
+    }
+
+    .btn-login {
+        margin-top: 10px;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .hero {
+        background-position: center;
+    }
+
+    .hero-content {
+        padding-top: 100px;
+        max-width: 450px;
+    }
+
+    .donor-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .stock-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .about-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESPONSIVE MOBILE
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 576px) {
+    .blodora-logo {
+        width: 125px;
+    }
+
+    .blodora-navbar.scrolled .blodora-logo {
+        width: 115px;
+    }
+
+    .hero-title {
+        font-size: 40px;
+    }
+
+    .hero-description {
+        font-size: 14px;
+    }
+
+    .hero-content {
+        padding-top: 100px;
+    }
+
+    .stock-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .donor-section,
+    .stock-section,
+    .about-section {
+        padding: 80px 20px;
+    }
+
+    .section-content h2,
+    .section-heading h2,
+    .about-content h2 {
+        font-size: 32px;
+    }
+}
