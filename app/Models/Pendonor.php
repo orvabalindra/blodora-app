@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Pemeriksaan;
-use App\Models\RiwayatDonor;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pendonor extends Model
 {
@@ -27,7 +26,7 @@ class Pendonor extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function pemeriksaans()
+    public function pemeriksaans(): HasMany
     {
         return $this->hasMany(
             Pemeriksaan::class,
@@ -36,12 +35,26 @@ class Pendonor extends Model
         );
     }
 
-    public function riwayatDonor()
-{
-    return $this->hasMany(
-        RiwayatDonor::class,
-        'pendonor_id',
-        'id'
-    );
-}
+    public function pendaftarans(): HasMany
+    {
+        return $this->hasMany(Pendaftaran::class);
+    }
+
+    public function riwayatDonor(): HasMany
+    {
+        return $this->hasMany(
+            RiwayatDonor::class,
+            'pendonor_id',
+            'id'
+        );
+    }
+
+    public function stokDarahs(): HasMany
+    {
+        return $this->hasMany(
+            StokDarah::class,
+            'pendonor_id',
+            'id'
+        );
+    }
 }

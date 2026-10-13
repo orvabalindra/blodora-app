@@ -365,60 +365,6 @@
                     </div>
 
 
-                    {{-- STATUS --}}
-                    <div class="col-md-6">
-
-                        <div class="admin-form-group">
-
-                            <label
-                                for="status"
-                                class="admin-form-label"
-                            >
-                                Status Permintaan
-                            </label>
-
-                            <select
-                                name="status"
-                                id="status"
-                                class="admin-form-select @error('status') is-invalid @enderror"
-                                required
-                            >
-
-                                <option
-                                    value="diproses"
-                                    {{ old('status', 'diproses') === 'diproses' ? 'selected' : '' }}
-                                >
-                                    Diproses
-                                </option>
-
-                                <option
-                                    value="diterima"
-                                    {{ old('status') === 'diterima' ? 'selected' : '' }}
-                                >
-                                    Diterima
-                                </option>
-
-                                <option
-                                    value="ditolak"
-                                    {{ old('status') === 'ditolak' ? 'selected' : '' }}
-                                >
-                                    Ditolak
-                                </option>
-
-                            </select>
-
-                            @error('status')
-
-                                <div class="admin-form-error">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-                        </div>
-
-                    </div>
-
                 </div>
 
 

@@ -59,6 +59,10 @@
                         {{ strtoupper(substr(Auth::user()->username ?? 'A', 0, 1)) }}
                     </div>
 
+                    <a href="{{ route('pendonor.create') }}" class="btn btn-danger">
+                        Tambah Pendonor
+                    </a>
+
                 </div>
 
             </div>
@@ -113,6 +117,14 @@
                         {{ session('error') }}
                     </div>
 
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger border-0 rounded-3 mb-4">
+                        @foreach($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
                 @endif
 
 
@@ -254,20 +266,23 @@
                                                                 </a>
 
 
-                                                                {{-- HAPUS --}}
-                                                                <form action="{{ route('pendonor.destroy', $pendonor->id) }}" method="POST"
-                                                                    class="d-inline"
-                                                                    onsubmit="return confirm('Yakin ingin menghapus data pendonor ini?')">
-
-                                                                    @csrf
-
-                                                                    @method('DELETE')
-
-                                                                    <button type="submit" class="admin-action-btn delete" title="Hapus">
-                                                                        ×
-                                                                    </button>
-
-                                                                </form>
+                                                                @if (
+                                                                    $pendonor->pendaftarans_count === 0
+                                                                    && $pendonor->pemeriksaans_count === 0
+                                                                    && $pendonor->riwayat_donor_count === 0
+                                                                    && $pendonor->stok_darahs_count === 0
+                                                                )
+                                                                    {{-- HAPUS --}}
+                                                                    <form action="{{ route('pendonor.destroy', $pendonor->id) }}" method="POST"
+                                                                        class="d-inline"
+                                                                        onsubmit="return confirm('Yakin ingin menghapus data pendonor ini?')">
+                                                                        @csrf
+                                                                        @method('DELETE')
+                                                                        <button type="submit" class="admin-action-btn delete" title="Hapus">
+                                                                            ×
+                                                                        </button>
+                                                                    </form>
+                                                                @endif
 
 
                                                             </div>

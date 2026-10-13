@@ -78,15 +78,16 @@
 
                 </div>
 
-
                 <div class="admin-page-actions">
 
-                    <a
-                        href="{{ route('permintaan-darah.edit', $permintaanDarah) }}"
-                        class="admin-btn-primary"
-                    >
-                        Edit
-                    </a>
+                    @if ($permintaanDarah->status === 'diproses')
+                        <a
+                            href="{{ route('permintaan-darah.edit', $permintaanDarah) }}"
+                            class="admin-btn-primary"
+                        >
+                            Edit
+                        </a>
+                    @endif
 
                     <a
                         href="{{ route('permintaan-darah.index') }}"
@@ -98,6 +99,28 @@
                 </div>
 
             </div>
+
+            @if (session('success'))
+                <div class="admin-form-alert admin-form-alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('info'))
+                <div class="admin-form-alert">
+                    {{ session('info') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="admin-form-alert admin-form-alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
 
             {{-- DETAIL --}}
@@ -114,6 +137,15 @@
                     <strong class="admin-detail-value">
                         {{ $permintaanDarah->rumahSakit?->nama_rs ?? 'Faskes tidak ditemukan' }}
                     </strong>
+
+                    @if ($permintaanDarah->rumahSakit)
+                        <a
+                            href="{{ route('rumah-sakit.show', $permintaanDarah->rumahSakit) }}"
+                            class="admin-table-link"
+                        >
+                            Lihat data faskes
+                        </a>
+                    @endif
 
                     @if ($permintaanDarah->rumahSakit)
 
@@ -183,6 +215,23 @@
 
                 </div>
 
+                <div class="admin-detail-item">
+
+                    <span class="admin-detail-label">
+                        Progres Penyerahan
+                    </span>
+
+                    <strong class="admin-detail-value">
+                        {{ $permintaanDarah->jumlah_terpenuhi }} dari
+                        {{ $permintaanDarah->jumlah_minta }} kantong
+                    </strong>
+
+                    <span class="admin-detail-sub-label">
+                        Sisa {{ max($permintaanDarah->jumlah_minta - $permintaanDarah->jumlah_terpenuhi, 0) }} kantong
+                    </span>
+
+                </div>
+
 
                 {{-- STATUS --}}
                 <div class="admin-detail-item">
@@ -198,16 +247,28 @@
                             Diproses
                         </span>
 
-                    @elseif ($permintaanDarah->status === 'diterima')
+                    @elseif ($permintaanDarah->status === 'ditolak')
+
+                        <span class="admin-status-pill danger">
+                            Ditolak
+                        </span>
+
+                    @elseif ($permintaanDarah->jumlah_terpenuhi >= $permintaanDarah->jumlah_minta)
 
                         <span class="admin-status-pill success">
-                            Diterima
+                            Terpenuhi
+                        </span>
+
+                    @elseif ($permintaanDarah->jumlah_terpenuhi > 0)
+
+                        <span class="admin-status-pill warning">
+                            Sebagian disalurkan
                         </span>
 
                     @else
 
-                        <span class="admin-status-pill danger">
-                            Ditolak
+                        <span class="admin-status-pill success">
+                            Disetujui, menunggu penyerahan
                         </span>
 
                     @endif
@@ -215,6 +276,53 @@
                 </div>
 
             </div>
+
+            @if ($permintaanDarah->penyalurans->isNotEmpty())
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">RIWAYAT</span>
+                        <h3>Penyerahan Darah</h3>
+                        <p>Batch stok yang digunakan untuk memenuhi permintaan ini.</p>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-data-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal Penyerahan</th>
+                                <th>Batch Stok</th>
+                                <th>Kedaluwarsa</th>
+                                <th>Jumlah</th>
+                                <th>Petugas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($permintaanDarah->penyalurans as $penyaluran)
+                                <tr>
+                                    <td>{{ $penyaluran->diserahkan_pada->format('d M Y H:i') }}</td>
+                                    <td>
+                                        @if ($penyaluran->stokDarah)
+                                            <a
+                                                href="{{ route('stok-darah.show', $penyaluran->stokDarah) }}"
+                                                class="admin-table-link"
+                                            >
+                                                Batch #{{ $penyaluran->stok_darah_id }}
+                                                ({{ $penyaluran->stokDarah->golongan_darah }}{{ $penyaluran->stokDarah->rhesus }})
+                                            </a>
+                                        @else
+                                            Batch #{{ $penyaluran->stok_darah_id }}
+                                        @endif
+                                    </td>
+                                    <td>{{ $penyaluran->stokDarah?->tanggal_kadaluarsa?->format('d M Y') ?? '-' }}</td>
+                                    <td>{{ $penyaluran->jumlah_kantong }} kantong</td>
+                                    <td>{{ $penyaluran->diserahkanOleh?->username ?? 'Petugas tidak tersedia' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
 
             {{-- ACTION --}}
@@ -228,23 +336,72 @@
                 </a>
 
 
-                <form
-                    action="{{ route('permintaan-darah.destroy', $permintaanDarah) }}"
-                    method="POST"
-                    onsubmit="return confirm('Yakin ingin menghapus permintaan darah ini?')"
-                >
+                @if ($permintaanDarah->status === 'diproses')
+                    <form action="{{ route('permintaan-darah.status', $permintaanDarah) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="diterima">
+                        <button type="submit" class="admin-btn-primary">
+                            Setujui Permintaan
+                        </button>
+                    </form>
 
-                    @csrf
-                    @method('DELETE')
-
-                    <button
-                        type="submit"
-                        class="admin-btn-primary"
+                    <form
+                        action="{{ route('permintaan-darah.status', $permintaanDarah) }}"
+                        method="POST"
+                        onsubmit="return confirm('Tolak permintaan darah ini?')"
                     >
-                        Hapus
-                    </button>
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="ditolak">
+                        <button type="submit" class="admin-btn-secondary">
+                            Tolak
+                        </button>
+                    </form>
+                @elseif ($permintaanDarah->status === 'diterima' && $permintaanDarah->jumlah_terpenuhi < $permintaanDarah->jumlah_minta)
+                    <form
+                        action="{{ route('permintaan-darah.penyaluran', $permintaanDarah) }}"
+                        method="POST"
+                    >
+                        @csrf
+                        <div class="admin-form-group">
+                            <label for="jumlah_kantong" class="admin-form-label">
+                                Jumlah yang benar-benar diserahkan
+                            </label>
+                            <div class="admin-input-unit">
+                                <input
+                                    type="number"
+                                    name="jumlah_kantong"
+                                    id="jumlah_kantong"
+                                    class="admin-form-control"
+                                    min="1"
+                                    max="{{ $permintaanDarah->jumlah_minta - $permintaanDarah->jumlah_terpenuhi }}"
+                                    value="{{ old('jumlah_kantong', $permintaanDarah->jumlah_minta - $permintaanDarah->jumlah_terpenuhi) }}"
+                                    required
+                                >
+                                <span class="admin-input-unit-label">kantong</span>
+                            </div>
+                        </div>
+                        <p>Stok yang dipakai harus memiliki golongan ABO dan rhesus yang sama serta belum kedaluwarsa.</p>
+                        <button type="submit" class="admin-btn-primary">
+                            Catat Penyerahan
+                        </button>
+                    </form>
+                @endif
 
-                </form>
+                @if ($permintaanDarah->status === 'diproses' && $permintaanDarah->penyalurans->isEmpty())
+                    <form
+                        action="{{ route('permintaan-darah.destroy', $permintaanDarah) }}"
+                        method="POST"
+                        onsubmit="return confirm('Yakin ingin menghapus permintaan darah ini?')"
+                    >
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="admin-btn-secondary">
+                            Hapus
+                        </button>
+                    </form>
+                @endif
 
             </div>
 

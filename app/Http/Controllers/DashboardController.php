@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -26,7 +27,6 @@ class DashboardController extends Controller
             return $this->pendonorDashboard();
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | DASHBOARD ADMIN
@@ -43,7 +43,6 @@ class DashboardController extends Controller
             ? DB::table('pendonors')->count()
             : 0;
 
-
         /*
         |--------------------------------------------------------------------------
         | 2. TOTAL RUMAH SAKIT / FASKES
@@ -53,7 +52,6 @@ class DashboardController extends Controller
         $totalRumahSakit = Schema::hasTable('rumah_sakits')
             ? DB::table('rumah_sakits')->count()
             : 0;
-
 
         /*
         |--------------------------------------------------------------------------
@@ -78,7 +76,6 @@ class DashboardController extends Controller
                 ->where('hasil', 'tidak layak')
                 ->count();
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -106,7 +103,6 @@ class DashboardController extends Controller
                     ->count();
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | 5. PERMINTAAN DARAH
@@ -115,8 +111,10 @@ class DashboardController extends Controller
 
         $totalPermintaan = 0;
         $permintaanDiproses = 0;
-        $permintaanDiterima = 0;
+        $permintaanMenungguPenyaluran = 0;
         $permintaanDitolak = 0;
+        $permintaanSebagian = 0;
+        $permintaanTerpenuhi = 0;
 
         if (Schema::hasTable('permintaan__darahs')) {
 
@@ -128,17 +126,33 @@ class DashboardController extends Controller
                     ->where('status', 'diproses')
                     ->count();
 
-            $permintaanDiterima =
-                DB::table('permintaan__darahs')
-                    ->where('status', 'diterima')
-                    ->count();
-
             $permintaanDitolak =
                 DB::table('permintaan__darahs')
                     ->where('status', 'ditolak')
                     ->count();
-        }
 
+            if (Schema::hasColumn('permintaan__darahs', 'jumlah_terpenuhi')) {
+                $permintaanMenungguPenyaluran = DB::table('permintaan__darahs')
+                    ->where('status', 'diterima')
+                    ->where('jumlah_terpenuhi', 0)
+                    ->count();
+
+                $permintaanSebagian = DB::table('permintaan__darahs')
+                    ->where('status', 'diterima')
+                    ->where('jumlah_terpenuhi', '>', 0)
+                    ->whereColumn('jumlah_terpenuhi', '<', 'jumlah_minta')
+                    ->count();
+
+                $permintaanTerpenuhi = DB::table('permintaan__darahs')
+                    ->where('status', 'diterima')
+                    ->whereColumn('jumlah_terpenuhi', '>=', 'jumlah_minta')
+                    ->count();
+            } else {
+                $permintaanMenungguPenyaluran = DB::table('permintaan__darahs')
+                    ->where('status', 'diterima')
+                    ->count();
+            }
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -193,7 +207,7 @@ class DashboardController extends Controller
                     $rhesus = '-';
                 }
 
-                $key = $golongan . $rhesus;
+                $key = $golongan.$rhesus;
 
                 if (array_key_exists($key, $stok)) {
 
@@ -205,7 +219,6 @@ class DashboardController extends Controller
                 }
             }
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -223,7 +236,6 @@ class DashboardController extends Controller
 
             'O' => $stok['O+'] + $stok['O-'],
         ];
-
 
         /*
         |--------------------------------------------------------------------------
@@ -252,7 +264,6 @@ class DashboardController extends Controller
             )
             ->limit(5)
             ->get();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -285,7 +296,6 @@ class DashboardController extends Controller
                 $chartData[] = $jumlah;
             }
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -326,7 +336,6 @@ class DashboardController extends Controller
             }
         }
 
-
         return view(
             'dashboard.admin',
             compact(
@@ -340,8 +349,10 @@ class DashboardController extends Controller
                 'donorGagal',
                 'totalPermintaan',
                 'permintaanDiproses',
-                'permintaanDiterima',
+                'permintaanMenungguPenyaluran',
                 'permintaanDitolak',
+                'permintaanSebagian',
+                'permintaanTerpenuhi',
                 'stok',
                 'stokGolongan',
                 'totalStok',
@@ -353,167 +364,168 @@ class DashboardController extends Controller
         );
     }
 
-
     /*
 |--------------------------------------------------------------------------
 | DASHBOARD PENDONOR
 |--------------------------------------------------------------------------
 */
 
-private function pendonorDashboard()
-{
-    $user = Auth::user();
+    private function pendonorDashboard()
+    {
+        $user = Auth::user();
 
+        /*
+        |--------------------------------------------------------------------------
+        | DATA PROFIL PENDONOR
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | DATA PROFIL PENDONOR
-    |--------------------------------------------------------------------------
-    */
+        $pendonor = $user->pendonor;
 
-    $pendonor = $user->pendonor;
+        /*
+        |--------------------------------------------------------------------------
+        | Jika profil belum dibuat
+        |--------------------------------------------------------------------------
+        */
 
+        if (! $pendonor) {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Jika profil belum dibuat
-    |--------------------------------------------------------------------------
-    */
+            return view(
+                'dashboard.pendonor',
+                [
+                    'pendonor' => null,
+                    'totalDonor' => 0,
+                    'pemeriksaanTerakhir' => null,
+                    'riwayatDonors' => collect(),
+                    'pendaftaranTerakhir' => null,
+                ]
+            );
+        }
 
-    if (!$pendonor) {
-
-        return view(
-            'dashboard.pendonor',
-            [
-                'pendonor' => null,
-                'totalDonor' => 0,
-                'pemeriksaanTerakhir' => null,
-                'riwayatDonors' => collect(),
-            ]
-        );
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | TOTAL DONOR SUKSES
-    |--------------------------------------------------------------------------
-    */
-
-    $totalDonor = 0;
-
-    if (Schema::hasTable('riwayat__donors')) {
-
-        $totalDonor = DB::table('riwayat__donors')
-            ->where(
-                'pendonor_id',
-                $pendonor->id
-            )
-            ->where(
-                'status',
-                'sukses'
-            )
-            ->count();
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PEMERIKSAAN TERAKHIR
-    |--------------------------------------------------------------------------
-    */
-
-    $pemeriksaanTerakhir = null;
-
-    if (Schema::hasTable('pemeriksaans')) {
-
-        $pemeriksaanTerakhir = DB::table('pemeriksaans')
-            ->where(
-                'pendonor_id',
-                $pendonor->id
-            )
-            ->orderByDesc(
-                'tanggal_pemeriksaan'
-            )
-            ->orderByDesc(
-                'id_pemeriksaan'
-            )
+        $pendaftaranTerakhir = $pendonor->pendaftarans()
+            ->with([
+                'jadwalDonor',
+                'pemeriksaans' => fn (HasMany $query): HasMany => $query->latest('id_pemeriksaan'),
+            ])
+            ->latest()
             ->first();
 
-
         /*
-        | Ubah tanggal string menjadi Carbon
+        |--------------------------------------------------------------------------
+        | TOTAL DONOR SUKSES
+        |--------------------------------------------------------------------------
         */
 
-        if (
-            $pemeriksaanTerakhir &&
-            !empty($pemeriksaanTerakhir->tanggal_pemeriksaan)
-        ) {
+        $totalDonor = 0;
 
-            $pemeriksaanTerakhir->tanggal_pemeriksaan =
-                Carbon::parse(
-                    $pemeriksaanTerakhir->tanggal_pemeriksaan
-                );
+        if (Schema::hasTable('riwayat__donors')) {
+
+            $totalDonor = DB::table('riwayat__donors')
+                ->where(
+                    'pendonor_id',
+                    $pendonor->id
+                )
+                ->where(
+                    'status',
+                    'sukses'
+                )
+                ->count();
         }
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RIWAYAT DONOR TERBARU
-    |--------------------------------------------------------------------------
-    */
-
-    $riwayatDonors = collect();
-
-    if (Schema::hasTable('riwayat__donors')) {
-
-        $riwayatDonors = DB::table('riwayat__donors')
-            ->where(
-                'pendonor_id',
-                $pendonor->id
-            )
-            ->orderByDesc(
-                'tanggal_donor'
-            )
-            ->orderByDesc(
-                'id_riwayat_donor'
-            )
-            ->limit(3)
-            ->get();
-
 
         /*
-        | Ubah tanggal riwayat menjadi Carbon
+        |--------------------------------------------------------------------------
+        | PEMERIKSAAN TERAKHIR
+        |--------------------------------------------------------------------------
         */
 
-        foreach ($riwayatDonors as $riwayat) {
+        $pemeriksaanTerakhir = null;
 
-            if (!empty($riwayat->tanggal_donor)) {
+        if (Schema::hasTable('pemeriksaans')) {
 
-                $riwayat->tanggal_donor =
+            $pemeriksaanTerakhir = DB::table('pemeriksaans')
+                ->where(
+                    'pendonor_id',
+                    $pendonor->id
+                )
+                ->orderByDesc(
+                    'tanggal_pemeriksaan'
+                )
+                ->orderByDesc(
+                    'id_pemeriksaan'
+                )
+                ->first();
+
+            /*
+            | Ubah tanggal string menjadi Carbon
+            */
+
+            if (
+                $pemeriksaanTerakhir &&
+                ! empty($pemeriksaanTerakhir->tanggal_pemeriksaan)
+            ) {
+
+                $pemeriksaanTerakhir->tanggal_pemeriksaan =
                     Carbon::parse(
-                        $riwayat->tanggal_donor
+                        $pemeriksaanTerakhir->tanggal_pemeriksaan
                     );
             }
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | RIWAYAT DONOR TERBARU
+        |--------------------------------------------------------------------------
+        */
+
+        $riwayatDonors = collect();
+
+        if (Schema::hasTable('riwayat__donors')) {
+
+            $riwayatDonors = DB::table('riwayat__donors')
+                ->where(
+                    'pendonor_id',
+                    $pendonor->id
+                )
+                ->orderByDesc(
+                    'tanggal_donor'
+                )
+                ->orderByDesc(
+                    'id_riwayat_donor'
+                )
+                ->limit(3)
+                ->get();
+
+            /*
+            | Ubah tanggal riwayat menjadi Carbon
+            */
+
+            foreach ($riwayatDonors as $riwayat) {
+
+                if (! empty($riwayat->tanggal_donor)) {
+
+                    $riwayat->tanggal_donor =
+                        Carbon::parse(
+                            $riwayat->tanggal_donor
+                        );
+                }
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DASHBOARD PENDONOR
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'dashboard.pendonor',
+            compact(
+                'pendonor',
+                'totalDonor',
+                'pemeriksaanTerakhir',
+                'riwayatDonors',
+                'pendaftaranTerakhir'
+            )
+        );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | DASHBOARD PENDONOR
-    |--------------------------------------------------------------------------
-    */
-
-    return view(
-        'dashboard.pendonor',
-        compact(
-            'pendonor',
-            'totalDonor',
-            'pemeriksaanTerakhir',
-            'riwayatDonors'
-        )
-    );
-}
 }

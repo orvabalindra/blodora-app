@@ -19,6 +19,11 @@ class JadwalDonor extends Model
         'kuota',
     ];
 
+    protected $casts = [
+        'tanggal' => 'date',
+        'kuota' => 'integer',
+    ];
+
     public function pendaftarans(): HasMany
     {
         return $this->hasMany(Pendaftaran::class);

@@ -3,8 +3,10 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JadwalDonorController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PemeriksaanController;
+use App\Http\Controllers\PendaftaranDonorController;
 use App\Http\Controllers\PendonorController;
 use App\Http\Controllers\PengaturanController;
 use App\Http\Controllers\PermintaanDarahController;
@@ -13,7 +15,6 @@ use App\Http\Controllers\RiwayatDonorController;
 use App\Http\Controllers\RumahSakitController;
 use App\Http\Controllers\StokDarahController;
 use Illuminate\Support\Facades\Route;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +33,6 @@ Route::get('/stok-darah-info', function () {
     return view('landingpage.stok-darah');
 })->name('stok.darah');
 
-
 /*
 |--------------------------------------------------------------------------
 | AUTHENTICATION
@@ -43,6 +43,7 @@ Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login');
 
 Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:login')
     ->name('login.process');
 
 Route::get('/register', [RegisterController::class, 'showRegister'])
@@ -54,7 +55,6 @@ Route::post('/register', [RegisterController::class, 'register'])
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -70,7 +70,7 @@ Route::get('/forgot-password', [
 Route::post('/forgot-password', [
     PasswordResetController::class,
     'sendResetLink',
-])->name('password.email');
+])->middleware('throttle:password-reset')->name('password.email');
 
 Route::get('/reset-password/{token}', [
     PasswordResetController::class,
@@ -80,8 +80,7 @@ Route::get('/reset-password/{token}', [
 Route::post('/reset-password', [
     PasswordResetController::class,
     'reset',
-])->name('password.update');
-
+])->middleware('throttle:password-reset')->name('password.update');
 
 /*
 |--------------------------------------------------------------------------
@@ -102,18 +101,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
         'index',
     ])->name('dashboard');
 
-
     /*
     |--------------------------------------------------------------------------
     | CRUD Pendonor
     |--------------------------------------------------------------------------
     */
 
-    Route::resource(
-        'pendonor',
-        PendonorController::class
-    );
-
+    Route::resource('pendonor', PendonorController::class);
 
     /*
     |--------------------------------------------------------------------------
@@ -126,7 +120,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         StokDarahController::class
     );
 
-
     /*
     |--------------------------------------------------------------------------
     | CRUD Pemeriksaan
@@ -137,7 +130,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         'pemeriksaan',
         PemeriksaanController::class
     );
-
 
     /*
     |--------------------------------------------------------------------------
@@ -150,7 +142,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         RumahSakitController::class
     );
 
-
     /*
     |--------------------------------------------------------------------------
     | CRUD Riwayat Donor
@@ -162,7 +153,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         RiwayatDonorController::class
     );
 
-
     /*
     |--------------------------------------------------------------------------
     | CRUD Permintaan Darah
@@ -173,7 +163,24 @@ Route::middleware(['auth', 'admin'])->group(function () {
         'permintaan-darah',
         PermintaanDarahController::class
     );
+    Route::patch(
+        '/permintaan-darah/{permintaanDarah}/status',
+        [PermintaanDarahController::class, 'updateStatus']
+    )->name('permintaan-darah.status');
+    Route::post(
+        '/permintaan-darah/{permintaanDarah}/penyaluran',
+        [PermintaanDarahController::class, 'storePenyaluran']
+    )->name('permintaan-darah.penyaluran');
 
+    Route::resource('jadwal-donor', JadwalDonorController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update']);
+
+    Route::get('/pendaftaran-donor', [PendaftaranDonorController::class, 'adminIndex'])
+        ->name('pendaftaran-donor.admin.index');
+    Route::put('/pendaftaran-donor/{pendaftaran}/screening', [PendaftaranDonorController::class, 'screening'])
+        ->name('pendaftaran-donor.screening');
+    Route::patch('/pendaftaran-donor/{pendaftaran}/status', [PendaftaranDonorController::class, 'ubahStatus'])
+        ->name('pendaftaran-donor.status');
 
     /*
     |--------------------------------------------------------------------------
@@ -188,22 +195,29 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | DASHBOARD PENDONOR
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'pendonor'])->group(function () {
 
     Route::get('/dashboard/pendonor', [
         DashboardController::class,
         'index',
     ])->name('dashboard.pendonor');
 
-});
+    Route::get('/donor/jadwal', [PendaftaranDonorController::class, 'jadwal'])
+        ->name('donor.jadwal');
+    Route::post('/donor/jadwal/{jadwalDonor}/pendaftaran', [PendaftaranDonorController::class, 'daftar'])
+        ->name('donor.pendaftaran.store');
+    Route::get('/donor/pendaftaran', [PendaftaranDonorController::class, 'riwayat'])
+        ->name('donor.pendaftaran.index');
+    Route::delete('/donor/pendaftaran/{pendaftaran}', [PendaftaranDonorController::class, 'batal'])
+        ->name('donor.pendaftaran.destroy');
 
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -211,30 +225,17 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'pendonor'])->group(function () {
 
     Route::get('/profil/lengkapi', [
         PendonorController::class,
         'createProfile',
     ])->name('pendonor.profile.create');
 
-
     Route::post('/profil/lengkapi', [
         PendonorController::class,
         'storeProfile',
     ])->name('pendonor.profile.store');
-
-
-    Route::get('/profil', [
-        PendonorController::class,
-        'profile',
-    ])->name('pendonor.profile');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Melihat profil pendonor
-    |--------------------------------------------------------------------------
-    */
 
     Route::get('/profil', [
         PendonorController::class,

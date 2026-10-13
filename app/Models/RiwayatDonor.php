@@ -13,6 +13,7 @@ class RiwayatDonor extends Model
 
     protected $fillable = [
         'pendonor_id',
+        'pendaftaran_id',
         'pemeriksaan_id',
         'tanggal_donor',
         'jumlah_donor',
@@ -40,5 +41,10 @@ class RiwayatDonor extends Model
             'pemeriksaan_id',
             'id_pemeriksaan'
         );
+    }
+
+    public function pendaftaran(): BelongsTo
+    {
+        return $this->belongsTo(Pendaftaran::class);
     }
 }

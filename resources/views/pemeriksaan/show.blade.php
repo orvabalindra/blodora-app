@@ -80,9 +80,11 @@
 
                     <div class="admin-page-actions">
 
-                        <a href="{{ route('pemeriksaan.edit', $pemeriksaan) }}" class="admin-btn-primary">
-                            Edit
-                        </a>
+                        @if ($pemeriksaan->pendaftaran_id === null && $pemeriksaan->riwayatDonors->isEmpty())
+                            <a href="{{ route('pemeriksaan.edit', $pemeriksaan) }}" class="admin-btn-primary">
+                                Edit
+                            </a>
+                        @endif
 
                         <a href="{{ route('pemeriksaan.index') }}" class="admin-btn-secondary">
                             Kembali
@@ -95,6 +97,41 @@
 
                 {{-- DATA PENDONOR --}}
                 <div class="admin-detail-grid">
+
+                    @if (session('info'))
+                        <div class="admin-form-alert full-width">
+                            {{ session('info') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="admin-form-alert admin-form-alert-danger full-width">
+                            @foreach ($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if ($pemeriksaan->pendaftaran_id)
+                        <div class="admin-detail-item full-width">
+                            <span class="admin-detail-label">Pendaftaran</span>
+                            <a href="{{ route('pendaftaran-donor.admin.index') }}" class="admin-table-link">
+                                Screening dari pendaftaran #{{ $pemeriksaan->pendaftaran_id }}
+                            </a>
+                            <span class="admin-detail-sub-label">
+                                Hasil screening terhubung dan dikelola melalui alur pendaftaran donor.
+                            </span>
+                        </div>
+                    @endif
+
+                    @foreach ($pemeriksaan->riwayatDonors as $riwayatDonor)
+                        <div class="admin-detail-item full-width">
+                            <span class="admin-detail-label">Riwayat Donor</span>
+                            <a href="{{ route('riwayat-donor.show', $riwayatDonor) }}" class="admin-table-link">
+                                Riwayat #{{ $riwayatDonor->id_riwayat_donor }}
+                            </a>
+                        </div>
+                    @endforeach
 
                     <div class="admin-detail-item full-width">
 
@@ -213,17 +250,14 @@
                     </a>
 
 
-                    <form action="{{ route('pemeriksaan.destroy', $pemeriksaan) }}" method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus data pemeriksaan ini?')">
-
-                        @csrf
-                        @method('DELETE')
-
-                        <button type="submit" class="admin-btn-primary">
-                            Hapus
-                        </button>
-
-                    </form>
+                    @if ($pemeriksaan->pendaftaran_id === null && $pemeriksaan->riwayatDonors->isEmpty())
+                        <form action="{{ route('pemeriksaan.destroy', $pemeriksaan) }}" method="POST"
+                            onsubmit="return confirm('Yakin ingin menghapus data pemeriksaan ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="admin-btn-primary">Hapus</button>
+                        </form>
+                    @endif
 
                 </div>
 

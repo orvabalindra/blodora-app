@@ -13,7 +13,8 @@ class PemeriksaanController extends Controller
      */
     public function index()
     {
-        $pemeriksaans = Pemeriksaan::with('pendonor')
+        $pemeriksaans = Pemeriksaan::with(['pendonor', 'pendaftaran'])
+            ->withCount('riwayatDonors')
             ->latest('id_pemeriksaan')
             ->get();
 
@@ -83,7 +84,7 @@ class PemeriksaanController extends Controller
      */
     public function show(Pemeriksaan $pemeriksaan)
     {
-        $pemeriksaan->load('pendonor');
+        $pemeriksaan->load(['pendonor', 'pendaftaran.jadwalDonor', 'riwayatDonors']);
 
         return view('pemeriksaan.show', compact('pemeriksaan'));
     }
@@ -93,6 +94,12 @@ class PemeriksaanController extends Controller
      */
     public function edit(Pemeriksaan $pemeriksaan)
     {
+        if ($pemeriksaan->pendaftaran_id !== null || $pemeriksaan->riwayatDonors()->exists()) {
+            return redirect()
+                ->route('pemeriksaan.show', $pemeriksaan)
+                ->with('info', 'Pemeriksaan yang terhubung dengan pendaftaran atau riwayat donor tidak dapat diubah.');
+        }
+
         $pendonors = Pendonor::orderBy('nama_lengkap')->get();
 
         return view('pemeriksaan.edit', compact(
@@ -108,6 +115,12 @@ class PemeriksaanController extends Controller
         Request $request,
         Pemeriksaan $pemeriksaan
     ) {
+        if ($pemeriksaan->pendaftaran_id !== null || $pemeriksaan->riwayatDonors()->exists()) {
+            return back()->withErrors([
+                'pemeriksaan' => 'Pemeriksaan yang terhubung dengan pendaftaran atau riwayat donor tidak dapat diubah.',
+            ]);
+        }
+
         $validated = $request->validate([
             'pendonor_id' => [
                 'required',
@@ -156,6 +169,12 @@ class PemeriksaanController extends Controller
      */
     public function destroy(Pemeriksaan $pemeriksaan)
     {
+        if ($pemeriksaan->pendaftaran_id !== null || $pemeriksaan->riwayatDonors()->exists()) {
+            return back()->withErrors([
+                'pemeriksaan' => 'Pemeriksaan yang terhubung dengan pendaftaran atau riwayat donor tidak dapat dihapus.',
+            ]);
+        }
+
         $pemeriksaan->delete();
 
         return redirect()

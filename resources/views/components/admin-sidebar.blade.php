@@ -48,6 +48,18 @@
             <span>Riwayat Donor</span>
         </a>
 
+        <a href="{{ route('jadwal-donor.index') }}"
+            class="admin-menu-item {{ request()->routeIs('jadwal-donor.*') ? 'active' : '' }}">
+            <span class="admin-menu-icon"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
+            <span>Jadwal Donor</span>
+        </a>
+
+        <a href="{{ route('pendaftaran-donor.admin.index') }}"
+            class="admin-menu-item {{ request()->routeIs('pendaftaran-donor.*') ? 'active' : '' }}">
+            <span class="admin-menu-icon">&#10003;</span>
+            <span>Pendaftaran &amp; Screening</span>
+        </a>
+
         {{-- PERMINTAAN DARAH --}}
         <a href="{{ route('permintaan-darah.index') }}"
             class="admin-menu-item {{ request()->routeIs('permintaan-darah.*') ? 'active' : '' }}">

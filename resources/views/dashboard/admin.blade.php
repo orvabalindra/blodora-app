@@ -498,11 +498,11 @@
                                     <div>
 
                                         <strong>
-                                            Diterima
+                                            Menunggu penyaluran
                                         </strong>
 
                                         <span>
-                                            Permintaan diterima
+                                            Disetujui, belum disalurkan
                                         </span>
 
                                     </div>
@@ -510,9 +510,35 @@
                                 </div>
 
                                 <strong class="admin-summary-number">
-                                    {{ $permintaanDiterima ?? 0 }}
+                                    {{ $permintaanMenungguPenyaluran ?? 0 }}
                                 </strong>
 
+                            </div>
+
+                            <div class="admin-summary-row">
+                                <div class="admin-summary-left">
+                                    <div class="admin-summary-icon warning">↗</div>
+                                    <div>
+                                        <strong>Sebagian disalurkan</strong>
+                                        <span>Masih ada sisa permintaan</span>
+                                    </div>
+                                </div>
+                                <strong class="admin-summary-number">
+                                    {{ $permintaanSebagian ?? 0 }}
+                                </strong>
+                            </div>
+
+                            <div class="admin-summary-row">
+                                <div class="admin-summary-left">
+                                    <div class="admin-summary-icon success">✓</div>
+                                    <div>
+                                        <strong>Terpenuhi</strong>
+                                        <span>Penyerahan selesai</span>
+                                    </div>
+                                </div>
+                                <strong class="admin-summary-number">
+                                    {{ $permintaanTerpenuhi ?? 0 }}
+                                </strong>
                             </div>
 
 

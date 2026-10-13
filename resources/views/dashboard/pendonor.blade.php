@@ -6,112 +6,7 @@
 
     <div class="donor-dashboard">
 
-        {{-- =========================================================
-        SIDEBAR
-        ========================================================== --}}
-        <aside class="donor-sidebar">
-
-            {{-- BRAND --}}
-            <div class="donor-sidebar-brand">
-
-                <img src="{{ asset('images/Blodora2.png') }}" alt="Blodora" class="donor-sidebar-logo">
-
-                <span class="donor-brand-subtitle">
-                    Blood Donation System
-                </span>
-
-            </div>
-
-
-            {{-- MENU --}}
-            <nav class="donor-sidebar-menu">
-
-                <div class="donor-menu-title">
-                    MENU
-                </div>
-
-
-                <a href="{{ route('dashboard.pendonor') }}"
-                    class="donor-menu-item {{ request()->routeIs('dashboard.pendonor') ? 'active' : '' }}">
-                    <span class="donor-menu-icon">⌂</span>
-                    <span>Dashboard</span>
-                </a>
-
-
-                <a href="{{ route('pendonor.profile') }}"
-                    class="donor-menu-item {{ request()->routeIs('pendonor.profile') ? 'active' : '' }}">
-                    <span class="donor-menu-icon">♙</span>
-                    <span>Profil Saya</span>
-                </a>
-
-
-                <a href="{{ route('pemeriksaan.index') }}" class="donor-menu-item">
-                    <span class="donor-menu-icon">♡</span>
-                    <span>Pemeriksaan Saya</span>
-                </a>
-
-
-                <a href="{{ route('riwayat-donor.index') }}" class="donor-menu-item">
-                    <span class="donor-menu-icon">↻</span>
-                    <span>Riwayat Donor</span>
-                </a>
-
-
-                <div class="donor-menu-separator"></div>
-
-
-                <div class="donor-menu-title">
-                    LAINNYA
-                </div>
-
-
-                <a href="{{ route('pengaturan') }}"
-                    class="donor-menu-item {{ request()->routeIs('pengaturan') ? 'active' : '' }}">
-                    <span class="donor-menu-icon">⚙</span>
-                    <span>Pengaturan</span>
-                </a>
-
-            </nav>
-
-
-            {{-- PROFILE / LOGOUT --}}
-            <div class="donor-sidebar-bottom">
-
-                <div class="donor-profile-mini">
-
-                    <div class="donor-avatar">
-                        {{ strtoupper(substr(Auth::user()->username ?? 'P', 0, 1)) }}
-                    </div>
-
-                    <div class="donor-profile-info">
-
-                        <strong>
-                            {{ Auth::user()->username ?? 'Pendonor' }}
-                        </strong>
-
-                        <span>
-                            Pendonor
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <form action="{{ route('logout') }}" method="POST">
-
-                    @csrf
-
-                    <button type="submit" class="donor-logout-btn">
-                        <span>↪</span>
-                        <span>Logout</span>
-                    </button>
-
-                </form>
-
-            </div>
-
-        </aside>
+        @include('components.donor-sidebar')
 
 
         {{-- =========================================================
@@ -397,7 +292,7 @@
                                     $pemeriksaanTerakhir
                                 )
 
-                                <a href="{{ route('pemeriksaan.show', ['pemeriksaan' => $pemeriksaanTerakhir->id_pemeriksaan]) }}"
+                                <a href="{{ route('donor.pendaftaran.index') }}"
                                     class="donor-btn-secondary">
                                     Lihat Detail
                                 </a>
@@ -635,6 +530,62 @@
             </div>
 
 
+            <div class="donor-panel mb-4">
+                <div class="donor-panel-header">
+                    <div>
+                        <span class="donor-section-label">PENDAFTARAN</span>
+                        <h3>Pendaftaran Donor Terakhir</h3>
+                        <p>Status jadwal dan hasil screening terbaru yang terhubung dengan pendaftaran.</p>
+                    </div>
+                    <a href="{{ route('donor.pendaftaran.index') }}" class="donor-btn-secondary">
+                        Lihat Semua
+                    </a>
+                </div>
+
+                @if ($pendaftaranTerakhir)
+                    @php
+                        $jadwalTerakhir = $pendaftaranTerakhir->jadwalDonor;
+                        $screeningTerakhir = $pendaftaranTerakhir->pemeriksaans->first();
+                    @endphp
+                    <div class="donor-history-row">
+                        <div class="donor-history-icon">◷</div>
+                        <div class="donor-history-content">
+                            <strong>{{ $jadwalTerakhir?->nama_kegiatan ?? 'Jadwal donor' }}</strong>
+                            <span>
+                                {{ $jadwalTerakhir?->tanggal?->translatedFormat('d F Y') ?? '-' }}
+                                @if ($jadwalTerakhir?->lokasi)
+                                    · {{ $jadwalTerakhir->lokasi }}
+                                @endif
+                            </span>
+                            @if ($screeningTerakhir)
+                                <span>Hasil screening: {{ ucfirst($screeningTerakhir->hasil) }}</span>
+                            @endif
+                        </div>
+                        <div class="donor-history-status">
+                            @if ($pendaftaranTerakhir->status === 'selesai')
+                                <span class="donor-status-pill success">Selesai donor</span>
+                            @elseif (in_array($pendaftaranTerakhir->status, ['gagal_screening', 'tidak_hadir', 'dibatalkan'], true))
+                                <span class="donor-status-pill danger">
+                                    {{ ucwords(str_replace('_', ' ', $pendaftaranTerakhir->status)) }}
+                                </span>
+                            @elseif ($pendaftaranTerakhir->status === 'proses_donor')
+                                <span class="donor-status-pill success">Lolos screening</span>
+                            @else
+                                <span class="donor-status-pill muted">
+                                    {{ ucwords(str_replace('_', ' ', $pendaftaranTerakhir->status)) }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                @else
+                    <div class="donor-empty-state compact">
+                        <strong>Belum ada pendaftaran donor</strong>
+                        <span>Pilih jadwal donor untuk memulai pendaftaran dan screening.</span>
+                        <a href="{{ route('donor.jadwal') }}" class="donor-btn-primary">Lihat Jadwal Donor</a>
+                    </div>
+                @endif
+            </div>
+
             {{-- =====================================================
             RIWAYAT + STATUS PROFIL
             ====================================================== --}}
@@ -665,7 +616,7 @@
                             </div>
 
 
-                            <a href="{{ route('riwayat-donor.index') }}" class="donor-btn-secondary">
+                            <a href="{{ route('donor.pendaftaran.index') }}" class="donor-btn-secondary">
                                 Lihat Semua
                             </a>
 
@@ -957,7 +908,7 @@
 
                     <div class="col-md-4">
 
-                        <a href="{{ route('pemeriksaan.index') }}" class="donor-quick-card">
+                        <a href="{{ route('donor.jadwal') }}" class="donor-quick-card">
 
                             <div class="donor-quick-icon">
                                 ♡
@@ -986,7 +937,7 @@
 
                     <div class="col-md-4">
 
-                        <a href="{{ route('riwayat-donor.index') }}" class="donor-quick-card">
+                        <a href="{{ route('donor.pendaftaran.index') }}" class="donor-quick-card">
 
                             <div class="donor-quick-icon">
                                 ↻

@@ -101,6 +101,14 @@
 
             @endif
 
+            @if ($errors->any())
+                <div class="admin-form-alert admin-form-alert-danger">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
 
             {{-- TABLE --}}
             <div style="overflow-x: auto;">
@@ -115,6 +123,7 @@
                             <th>Tanggal</th>
                             <th>Golongan</th>
                             <th>Jumlah</th>
+                            <th>Disalurkan</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -181,6 +190,11 @@
                                     {{ $permintaan->jumlah_minta }} kantong
                                 </td>
 
+                                <td>
+                                    {{ $permintaan->jumlah_terpenuhi }} dari
+                                    {{ $permintaan->jumlah_minta }} kantong
+                                </td>
+
 
                                 {{-- STATUS --}}
                                 <td>
@@ -191,16 +205,28 @@
                                             Diproses
                                         </span>
 
-                                    @elseif ($permintaan->status === 'diterima')
+                                    @elseif ($permintaan->status === 'ditolak')
+
+                                        <span class="admin-status-pill danger">
+                                            Ditolak
+                                        </span>
+
+                                    @elseif ($permintaan->jumlah_terpenuhi >= $permintaan->jumlah_minta)
 
                                         <span class="admin-status-pill success">
-                                            Diterima
+                                            Terpenuhi
+                                        </span>
+
+                                    @elseif ($permintaan->jumlah_terpenuhi > 0)
+
+                                        <span class="admin-status-pill warning">
+                                            Sebagian disalurkan
                                         </span>
 
                                     @else
 
-                                        <span class="admin-status-pill danger">
-                                            Ditolak
+                                        <span class="admin-status-pill success">
+                                            Disetujui
                                         </span>
 
                                     @endif
@@ -230,49 +256,47 @@
 
 
                                         {{-- EDIT --}}
-                                        <a
-                                            href="{{ route('permintaan-darah.edit', $permintaan) }}"
-                                            class="admin-action-btn edit"
-                                            title="Edit"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                aria-hidden="true"
-                                            >
-                                                <path d="M12 20h9"></path>
-                                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z"></path>
-                                            </svg>
-                                        </a>
-
-
-                                        {{-- HAPUS --}}
-                                        <form
-                                            action="{{ route('permintaan-darah.destroy', $permintaan) }}"
-                                            method="POST"
-                                            onsubmit="return confirm('Yakin ingin menghapus permintaan darah ini?')"
-                                        >
-
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button
-                                                type="submit"
-                                                class="admin-action-btn delete"
-                                                title="Hapus"
+                                        @if ($permintaan->status === 'diproses')
+                                            <a
+                                                href="{{ route('permintaan-darah.edit', $permintaan) }}"
+                                                class="admin-action-btn edit"
+                                                title="Edit"
                                             >
                                                 <svg
                                                     viewBox="0 0 24 24"
                                                     aria-hidden="true"
                                                 >
-                                                    <path d="M3 6h18"></path>
-                                                    <path d="M8 6V4h8v2"></path>
-                                                    <path d="M19 6l-1 14H6L5 6"></path>
-                                                    <path d="M10 11v5"></path>
-                                                    <path d="M14 11v5"></path>
+                                                    <path d="M12 20h9"></path>
+                                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z"></path>
                                                 </svg>
-                                            </button>
+                                            </a>
+                                        @endif
 
-                                        </form>
+
+                                        {{-- HAPUS --}}
+                                        @if ($permintaan->status === 'diproses' && $permintaan->penyalurans_count === 0)
+                                            <form
+                                                action="{{ route('permintaan-darah.destroy', $permintaan) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Yakin ingin menghapus permintaan darah ini?')"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+                                                <button
+                                                    type="submit"
+                                                    class="admin-action-btn delete"
+                                                    title="Hapus"
+                                                >
+                                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path d="M3 6h18"></path>
+                                                        <path d="M8 6V4h8v2"></path>
+                                                        <path d="M19 6l-1 14H6L5 6"></path>
+                                                        <path d="M10 11v5"></path>
+                                                        <path d="M14 11v5"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        @endif
 
                                     </div>
 
@@ -285,7 +309,7 @@
 
                             <tr>
 
-                                <td colspan="7">
+                                <td colspan="8">
 
                                     <div class="admin-empty-state">
 

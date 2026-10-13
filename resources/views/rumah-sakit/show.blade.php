@@ -98,6 +98,14 @@
 
             </div>
 
+            @if ($errors->any())
+                <div class="admin-form-alert admin-form-alert-danger">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
 
             {{-- DETAIL --}}
             <div class="admin-detail-grid">
@@ -171,26 +179,65 @@
                 </a>
 
 
-                <form
-                    action="{{ route('rumah-sakit.destroy', $rumahSakit) }}"
-                    method="POST"
-                    onsubmit="return confirm('Yakin ingin menghapus data Faskes ini?')"
-                >
-
-                    @csrf
-                    @method('DELETE')
-
-                    <button
-                        type="submit"
-                        class="admin-btn-primary"
+                @if ($permintaanDarahs->isEmpty())
+                    <form
+                        action="{{ route('rumah-sakit.destroy', $rumahSakit) }}"
+                        method="POST"
+                        onsubmit="return confirm('Yakin ingin menghapus data Faskes ini?')"
                     >
-                        Hapus
-                    </button>
-
-                </form>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="admin-btn-primary">Hapus</button>
+                    </form>
+                @endif
 
             </div>
 
+        </div>
+
+        <div class="admin-panel">
+            <div class="admin-panel-header">
+                <div>
+                    <span class="admin-section-label">PERMINTAAN DARAH</span>
+                    <h3>Permintaan dari Faskes Ini</h3>
+                    <p>Lima permintaan terbaru yang tercatat untuk fasilitas kesehatan ini.</p>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="admin-data-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Golongan</th>
+                            <th>Jumlah</th>
+                            <th>Disalurkan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($permintaanDarahs as $permintaan)
+                            <tr>
+                                <td>{{ $permintaan->tanggal_permintaan?->format('d M Y') ?? '-' }}</td>
+                                <td>{{ $permintaan->golongan_darah }}{{ $permintaan->rhesus }}</td>
+                                <td>{{ $permintaan->jumlah_minta }} kantong</td>
+                                <td>{{ $permintaan->jumlah_terpenuhi }} kantong</td>
+                                <td>
+                                    <a
+                                        href="{{ route('permintaan-darah.show', $permintaan) }}"
+                                        class="admin-table-link"
+                                    >
+                                        Detail permintaan
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5">Faskes ini belum memiliki permintaan darah.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
 

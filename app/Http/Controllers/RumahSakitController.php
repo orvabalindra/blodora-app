@@ -12,7 +12,9 @@ class RumahSakitController extends Controller
      */
     public function index()
     {
-        $rumahSakits = RumahSakit::latest('id_rs')->get();
+        $rumahSakits = RumahSakit::withCount('permintaanDarah')
+            ->latest('id_rs')
+            ->get();
 
         return view(
             'rumah-sakit.index',
@@ -67,9 +69,14 @@ class RumahSakitController extends Controller
      */
     public function show(RumahSakit $rumahSakit)
     {
+        $permintaanDarahs = $rumahSakit->permintaanDarah()
+            ->latest('id_permintaan_darah')
+            ->limit(5)
+            ->get();
+
         return view(
             'rumah-sakit.show',
-            compact('rumahSakit')
+            compact('rumahSakit', 'permintaanDarahs')
         );
     }
 
@@ -125,6 +132,12 @@ class RumahSakitController extends Controller
      */
     public function destroy(RumahSakit $rumahSakit)
     {
+        if ($rumahSakit->permintaanDarah()->exists()) {
+            return back()->withErrors([
+                'rumah_sakit' => 'Faskes yang sudah memiliki permintaan darah tidak dapat dihapus.',
+            ]);
+        }
+
         $rumahSakit->delete();
 
         return redirect()

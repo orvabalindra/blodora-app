@@ -92,6 +92,14 @@
 
                 @endif
 
+                @if($errors->any())
+                    <div class="alert alert-danger border-0 rounded-3 mb-4">
+                        @foreach($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
+
 
                 {{-- DATA --}}
                 @if($stokDarah->count() > 0)
@@ -183,25 +191,24 @@
                                                                     👁
                                                                 </a>
 
-                                                                {{-- EDIT --}}
-                                                                <a href="{{ route('stok-darah.edit', $stok->id_stok_darah) }}"
-                                                                    class="admin-action-btn edit" title="Edit">
-                                                                    ✎
-                                                                </a>
+                                                                @if ($stok->pendaftaran_id === null && $stok->penyalurans->isEmpty())
+                                                                    {{-- EDIT --}}
+                                                                    <a href="{{ route('stok-darah.edit', $stok->id_stok_darah) }}"
+                                                                        class="admin-action-btn edit" title="Edit">
+                                                                        ✎
+                                                                    </a>
 
-                                                                {{-- HAPUS --}}
-                                                                <form action="{{ route('stok-darah.destroy', $stok->id_stok_darah) }}" method="POST"
-                                                                    class="d-inline"
-                                                                    onsubmit="return confirm('Yakin ingin menghapus stok darah ini?')">
-
-                                                                    @csrf
-                                                                    @method('DELETE')
-
-                                                                    <button type="submit" class="admin-action-btn delete" title="Hapus">
-                                                                        ×
-                                                                    </button>
-
-                                                                </form>
+                                                                    {{-- HAPUS --}}
+                                                                    <form action="{{ route('stok-darah.destroy', $stok->id_stok_darah) }}" method="POST"
+                                                                        class="d-inline"
+                                                                        onsubmit="return confirm('Yakin ingin menghapus stok darah ini?')">
+                                                                        @csrf
+                                                                        @method('DELETE')
+                                                                        <button type="submit" class="admin-action-btn delete" title="Hapus">
+                                                                            ×
+                                                                        </button>
+                                                                    </form>
+                                                                @endif
 
                                                             </div>
 

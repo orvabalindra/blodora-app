@@ -375,69 +375,6 @@
                     </div>
 
 
-                    {{-- STATUS --}}
-                    <div class="col-md-6">
-
-                        <div class="admin-form-group">
-
-                            <label
-                                for="status"
-                                class="admin-form-label"
-                            >
-                                Status Permintaan
-                            </label>
-
-                            <select
-                                name="status"
-                                id="status"
-                                class="admin-form-select @error('status') is-invalid @enderror"
-                                required
-                            >
-
-                                <option
-                                    value="diproses"
-                                    {{ old(
-                                        'status',
-                                        $permintaanDarah->status
-                                    ) === 'diproses' ? 'selected' : '' }}
-                                >
-                                    Diproses
-                                </option>
-
-                                <option
-                                    value="diterima"
-                                    {{ old(
-                                        'status',
-                                        $permintaanDarah->status
-                                    ) === 'diterima' ? 'selected' : '' }}
-                                >
-                                    Diterima
-                                </option>
-
-                                <option
-                                    value="ditolak"
-                                    {{ old(
-                                        'status',
-                                        $permintaanDarah->status
-                                    ) === 'ditolak' ? 'selected' : '' }}
-                                >
-                                    Ditolak
-                                </option>
-
-                            </select>
-
-                            @error('status')
-
-                                <div class="admin-form-error">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-                        </div>
-
-                    </div>
-
                 </div>
 
 

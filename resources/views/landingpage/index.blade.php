@@ -299,120 +299,26 @@
         class="stock-section">
 
         <div class="container">
-
             <div class="section-heading">
-
-                <span class="section-label">
-                    INFORMASI
-                </span>
-
-                <h2>
-                    Stok <span>Darah</span>
-                </h2>
-
-                <p>
-                    Pantau ketersediaan stok darah yang tersedia
-                    di Blodora.
-                </p>
-
+                <span class="section-label">INFORMASI</span>
+                <h2>Stok <span>Darah</span></h2>
+                <p>Pantau ketersediaan stok darah yang tersedia di Blodora.</p>
             </div>
-
-
-            <!-- STOCK CARDS -->
 
             <div class="stock-grid">
-
-                <!-- A -->
-                <div class="blood-card">
-
-                    <div class="blood-type">
-                        A
+                @foreach ($stokDarahs as $golonganDarah => $jumlahKantong)
+                    <div class="blood-card">
+                        <div class="blood-type">{{ $golonganDarah }}</div>
+                        <h3>Golongan {{ $golonganDarah }}</h3>
+                        <p>{{ number_format($jumlahKantong) }} kantong</p>
+                        <div class="stock-status {{ $jumlahKantong > 0 ? 'is-available' : 'is-empty' }}">
+                            <span class="stock-status-dot" aria-hidden="true"></span>
+                            {{ $jumlahKantong > 0 ? 'Tersedia' : 'Stok kosong' }}
+                        </div>
                     </div>
-
-                    <h3>
-                        Golongan A
-                    </h3>
-
-                    <p>
-                        Tersedia
-                    </p>
-
-                    <div class="stock-status">
-                        ●
-                    </div>
-
-                </div>
-
-
-                <!-- B -->
-                <div class="blood-card">
-
-                    <div class="blood-type">
-                        B
-                    </div>
-
-                    <h3>
-                        Golongan B
-                    </h3>
-
-                    <p>
-                        Tersedia
-                    </p>
-
-                    <div class="stock-status">
-                        ●
-                    </div>
-
-                </div>
-
-
-                <!-- AB -->
-                <div class="blood-card">
-
-                    <div class="blood-type">
-                        AB
-                    </div>
-
-                    <h3>
-                        Golongan AB
-                    </h3>
-
-                    <p>
-                        Tersedia
-                    </p>
-
-                    <div class="stock-status">
-                        ●
-                    </div>
-
-                </div>
-
-
-                <!-- O -->
-                <div class="blood-card">
-
-                    <div class="blood-type">
-                        O
-                    </div>
-
-                    <h3>
-                        Golongan O
-                    </h3>
-
-                    <p>
-                        Tersedia
-                    </p>
-
-                    <div class="stock-status">
-                        ●
-                    </div>
-
-                </div>
-
+                @endforeach
             </div>
-
         </div>
-
     </section>
 
 

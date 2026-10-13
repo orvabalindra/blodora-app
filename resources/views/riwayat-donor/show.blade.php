@@ -81,12 +81,14 @@
 
                 <div class="admin-page-actions">
 
-                    <a
-                        href="{{ route('riwayat-donor.edit', $riwayatDonor) }}"
-                        class="admin-btn-primary"
-                    >
-                        Edit
-                    </a>
+                    @if ($riwayatDonor->pendaftaran_id === null)
+                        <a
+                            href="{{ route('riwayat-donor.edit', $riwayatDonor) }}"
+                            class="admin-btn-primary"
+                        >
+                            Edit
+                        </a>
+                    @endif
 
                     <a
                         href="{{ route('riwayat-donor.index') }}"
@@ -102,6 +104,29 @@
 
             {{-- DETAIL --}}
             <div class="admin-detail-grid">
+
+                @if (session('info'))
+                    <div class="admin-form-alert full-width">
+                        {{ session('info') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="admin-form-alert admin-form-alert-danger full-width">
+                        @foreach ($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if ($riwayatDonor->pendaftaran_id)
+                    <div class="admin-detail-item full-width">
+                        <span class="admin-detail-label">Pendaftaran</span>
+                        <a href="{{ route('pendaftaran-donor.admin.index') }}" class="admin-table-link">
+                            Riwayat donor dari pendaftaran #{{ $riwayatDonor->pendaftaran_id }}
+                        </a>
+                    </div>
+                @endif
 
                 {{-- PENDONOR --}}
                 <div class="admin-detail-item full-width">
@@ -127,6 +152,18 @@
                     @endif
 
                 </div>
+
+                @if ($riwayatDonor->pendaftaran)
+                    <div class="admin-detail-item">
+                        <span class="admin-detail-label">Jadwal Donor</span>
+                        <strong class="admin-detail-value">
+                            {{ $riwayatDonor->pendaftaran->jadwalDonor?->nama_kegiatan ?? '-' }}
+                        </strong>
+                        <span class="admin-detail-sub-label">
+                            {{ $riwayatDonor->pendaftaran->jadwalDonor?->tanggal?->format('d F Y') ?? '-' }}
+                        </span>
+                    </div>
+                @endif
 
 
                 {{-- TANGGAL DONOR --}}
@@ -230,23 +267,17 @@
                 </a>
 
 
-                <form
-                    action="{{ route('riwayat-donor.destroy', $riwayatDonor) }}"
-                    method="POST"
-                    onsubmit="return confirm('Yakin ingin menghapus riwayat donor ini?')"
-                >
-
-                    @csrf
-                    @method('DELETE')
-
-                    <button
-                        type="submit"
-                        class="admin-btn-primary"
+                @if ($riwayatDonor->pendaftaran_id === null)
+                    <form
+                        action="{{ route('riwayat-donor.destroy', $riwayatDonor) }}"
+                        method="POST"
+                        onsubmit="return confirm('Yakin ingin menghapus riwayat donor ini?')"
                     >
-                        Hapus
-                    </button>
-
-                </form>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="admin-btn-primary">Hapus</button>
+                    </form>
+                @endif
 
             </div>
 

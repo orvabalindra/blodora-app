@@ -91,12 +91,14 @@
                 <div class="admin-page-actions">
 
                     {{-- EDIT --}}
-                    <a
-                        href="{{ route('stok-darah.edit', $stokDarah) }}"
-                        class="admin-btn-primary"
-                    >
-                        Edit
-                    </a>
+                    @if ($stokDarah->pendaftaran_id === null && $stokDarah->penyalurans->isEmpty())
+                        <a
+                            href="{{ route('stok-darah.edit', $stokDarah) }}"
+                            class="admin-btn-primary"
+                        >
+                            Edit
+                        </a>
+                    @endif
 
 
                     {{-- KEMBALI --}}
@@ -115,6 +117,19 @@
             {{-- DETAIL DATA --}}
             <div class="admin-detail-grid">
 
+                @if (session('info'))
+                    <div class="admin-form-alert full-width">
+                        {{ session('info') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="admin-form-alert admin-form-alert-danger full-width">
+                        @foreach ($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
 
                 {{-- PENDONOR --}}
                 <div class="admin-detail-item">
@@ -126,6 +141,11 @@
                     <strong class="admin-detail-value">
                         {{ $stokDarah->pendonor?->nama_lengkap ?? 'Tidak ditemukan' }}
                     </strong>
+                    @if ($stokDarah->pendonor)
+                        <a href="{{ route('pendonor.show', $stokDarah->pendonor) }}" class="admin-table-link">
+                            Lihat profil pendonor
+                        </a>
+                    @endif
 
                 </div>
 
@@ -185,29 +205,72 @@
 
                 </div>
 
+                @if ($stokDarah->pendaftaran)
+                    <div class="admin-detail-item">
+                        <span class="admin-detail-label">Sumber Batch</span>
+                        <a href="{{ route('pendaftaran-donor.admin.index') }}" class="admin-table-link">
+                            Pendaftaran donor #{{ $stokDarah->pendaftaran_id }}
+                        </a>
+                    </div>
+                @endif
+
 
             </div>
+
+            @if ($stokDarah->penyalurans->isNotEmpty())
+                <div class="admin-panel-header">
+                    <div>
+                        <span class="admin-section-label">JEJAK STOK</span>
+                        <h3>Riwayat Penyaluran</h3>
+                        <p>Permintaan faskes yang mengambil stok dari batch ini.</p>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="admin-data-table">
+                        <thead>
+                            <tr>
+                                <th>Permintaan</th>
+                                <th>Faskes</th>
+                                <th>Tanggal</th>
+                                <th>Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($stokDarah->penyalurans as $penyaluran)
+                                <tr>
+                                    <td>
+                                        <a
+                                            href="{{ route('permintaan-darah.show', $penyaluran->permintaanDarah) }}"
+                                            class="admin-table-link"
+                                        >
+                                            #{{ $penyaluran->permintaan_darah_id }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $penyaluran->permintaanDarah?->rumahSakit?->nama_rs ?? '-' }}</td>
+                                    <td>{{ $penyaluran->diserahkan_pada->format('d M Y H:i') }}</td>
+                                    <td>{{ $penyaluran->jumlah_kantong }} kantong</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
 
             {{-- DELETE --}}
             <div class="admin-form-actions">
 
-                <form
-                    action="{{ route('stok-darah.destroy', $stokDarah) }}"
-                    method="POST"
-                    onsubmit="return confirm('Yakin ingin menghapus data stok darah ini?')"
-                >
-                    @csrf
-                    @method('DELETE')
-
-                    <button
-                        type="submit"
-                        class="admin-btn-secondary"
+                @if ($stokDarah->pendaftaran_id === null && $stokDarah->penyalurans->isEmpty())
+                    <form
+                        action="{{ route('stok-darah.destroy', $stokDarah) }}"
+                        method="POST"
+                        onsubmit="return confirm('Yakin ingin menghapus data stok darah ini?')"
                     >
-                        Hapus
-                    </button>
-
-                </form>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="admin-btn-secondary">Hapus</button>
+                    </form>
+                @endif
 
             </div>
 

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RiwayatDonor;
-use App\Models\Pendonor;
 use App\Models\Pemeriksaan;
+use App\Models\Pendonor;
+use App\Models\RiwayatDonor;
 use Illuminate\Http\Request;
 
 class RiwayatDonorController extends Controller
@@ -16,7 +16,8 @@ class RiwayatDonorController extends Controller
     {
         $riwayatDonors = RiwayatDonor::with([
             'pendonor',
-            'pemeriksaan'
+            'pemeriksaan',
+            'pendaftaran',
         ])
             ->latest('id_riwayat_donor')
             ->get();
@@ -88,7 +89,8 @@ class RiwayatDonorController extends Controller
     {
         $riwayatDonor = RiwayatDonor::with([
             'pendonor',
-            'pemeriksaan'
+            'pemeriksaan',
+            'pendaftaran.jadwalDonor',
         ])->findOrFail($id);
 
         return view(
@@ -102,6 +104,12 @@ class RiwayatDonorController extends Controller
      */
     public function edit(RiwayatDonor $riwayatDonor)
     {
+        if ($riwayatDonor->pendaftaran_id !== null) {
+            return redirect()
+                ->route('riwayat-donor.show', $riwayatDonor)
+                ->with('info', 'Riwayat yang dibuat dari pendaftaran donor tidak dapat diubah.');
+        }
+
         $pendonors = Pendonor::orderBy('nama_lengkap')->get();
 
         $pemeriksaans = Pemeriksaan::with('pendonor')
@@ -125,6 +133,12 @@ class RiwayatDonorController extends Controller
         Request $request,
         RiwayatDonor $riwayatDonor
     ) {
+        if ($riwayatDonor->pendaftaran_id !== null) {
+            return back()->withErrors([
+                'riwayat' => 'Riwayat yang dibuat dari pendaftaran donor tidak dapat diubah.',
+            ]);
+        }
+
         $validated = $request->validate([
             'pendonor_id' => [
                 'required',
@@ -165,6 +179,12 @@ class RiwayatDonorController extends Controller
      */
     public function destroy(RiwayatDonor $riwayatDonor)
     {
+        if ($riwayatDonor->pendaftaran_id !== null) {
+            return back()->withErrors([
+                'riwayat' => 'Riwayat yang dibuat dari pendaftaran donor tidak dapat dihapus.',
+            ]);
+        }
+
         $riwayatDonor->delete();
 
         return redirect()

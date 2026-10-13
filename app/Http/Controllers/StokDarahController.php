@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StokDarah;
 use App\Models\Pendonor;
+use App\Models\StokDarah;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StokDarahController extends Controller
 {
@@ -13,7 +14,7 @@ class StokDarahController extends Controller
      */
     public function index()
     {
-        $stokDarah = StokDarah::with('pendonor')
+        $stokDarah = StokDarah::with(['pendonor', 'penyalurans'])
             ->latest('id_stok_darah')
             ->get();
 
@@ -81,7 +82,11 @@ class StokDarahController extends Controller
      */
     public function show(StokDarah $stokDarah)
     {
-        $stokDarah->load('pendonor');
+        $stokDarah->load([
+            'pendonor',
+            'pendaftaran',
+            'penyalurans.permintaanDarah.rumahSakit',
+        ]);
 
         return view('stok-darah.show', compact('stokDarah'));
     }
@@ -91,6 +96,12 @@ class StokDarahController extends Controller
      */
     public function edit(StokDarah $stokDarah)
     {
+        if ($this->isManagedByWorkflow($stokDarah)) {
+            return redirect()
+                ->route('stok-darah.show', $stokDarah)
+                ->with('info', 'Batch stok yang terhubung dengan donor atau penyaluran tidak dapat diubah.');
+        }
+
         $pendonors = Pendonor::orderBy('nama_lengkap')->get();
 
         return view(
@@ -138,7 +149,25 @@ class StokDarahController extends Controller
             ],
         ]);
 
-        $stokDarah->update($validated);
+        $updated = DB::transaction(function () use ($stokDarah, $validated): bool {
+            $lockedStokDarah = StokDarah::query()
+                ->lockForUpdate()
+                ->findOrFail($stokDarah->getKey());
+
+            if ($this->isManagedByWorkflow($lockedStokDarah)) {
+                return false;
+            }
+
+            $lockedStokDarah->update($validated);
+
+            return true;
+        });
+
+        if (! $updated) {
+            return back()->withErrors([
+                'stok' => 'Batch stok yang terhubung dengan donor atau penyaluran tidak dapat diubah.',
+            ]);
+        }
 
         return redirect()
             ->route('stok-darah.index')
@@ -150,10 +179,34 @@ class StokDarahController extends Controller
      */
     public function destroy(StokDarah $stokDarah)
     {
-        $stokDarah->delete();
+        $deleted = DB::transaction(function () use ($stokDarah): bool {
+            $lockedStokDarah = StokDarah::query()
+                ->lockForUpdate()
+                ->findOrFail($stokDarah->getKey());
+
+            if ($this->isManagedByWorkflow($lockedStokDarah)) {
+                return false;
+            }
+
+            $lockedStokDarah->delete();
+
+            return true;
+        });
+
+        if (! $deleted) {
+            return back()->withErrors([
+                'stok' => 'Batch stok yang terhubung dengan donor atau penyaluran tidak dapat dihapus.',
+            ]);
+        }
 
         return redirect()
             ->route('stok-darah.index')
             ->with('success', 'Stok darah berhasil dihapus.');
+    }
+
+    private function isManagedByWorkflow(StokDarah $stokDarah): bool
+    {
+        return $stokDarah->pendaftaran_id !== null
+            || $stokDarah->penyalurans()->exists();
     }
 }
