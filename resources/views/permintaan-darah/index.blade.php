@@ -93,6 +93,12 @@
 
 
             {{-- SUCCESS MESSAGE --}}
+            @include('components.admin-list-search', [
+                'action' => route('permintaan-darah.index'),
+                'items' => $permintaanDarahs,
+                'placeholder' => 'Cari nama faskes, golongan darah, atau status',
+            ])
+
             @if (session('success'))
 
                 <div class="admin-form-alert admin-form-alert-success">
@@ -139,7 +145,7 @@
 
                                 {{-- NO --}}
                                 <td>
-                                    {{ $loop->iteration }}
+                                    {{ $loop->iteration + (($permintaanDarahs->currentPage() - 1) * $permintaanDarahs->perPage()) }}
                                 </td>
 
 
@@ -260,7 +266,7 @@
                                             <a
                                                 href="{{ route('permintaan-darah.edit', $permintaan) }}"
                                                 class="admin-action-btn edit"
-                                                title="Edit"
+                                                title="Ubah"
                                             >
                                                 <svg
                                                     viewBox="0 0 24 24"
@@ -318,7 +324,7 @@
                                         </div>
 
                                         <strong>
-                                            Belum ada data permintaan darah.
+                                            {{ request()->filled('q') ? 'Tidak ada permintaan yang cocok dengan pencarian.' : 'Belum ada data permintaan darah.' }}
                                         </strong>
 
                                         <span>
@@ -342,11 +348,13 @@
         </div>
 
 
+        <div class="mt-4">{{ $permintaanDarahs->links() }}</div>
+
         {{-- FOOTER --}}
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

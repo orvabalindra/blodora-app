@@ -1,13 +1,13 @@
 @extends('layouts.auth')
 
-@section('title', 'Register - Blodora')
+@section('title', 'Daftar - Blodora')
 
 @section('content')
 
     <div class="auth-topbar">
 
         <a href="/" class="auth-back">
-            ← Back
+            ← Kembali
         </a>
 
         <div class="auth-switch">
@@ -20,7 +20,7 @@
                 href="{{ route('login') }}"
                 class="auth-login-link"
             >
-                Login
+                Masuk
             </a>
 
         </div>
@@ -39,11 +39,11 @@
             >
 
             <h1 class="auth-title">
-                Create Account
+                Buat Akun
             </h1>
 
             <p class="auth-subtitle">
-                Register to get started
+                Daftar untuk memulai
             </p>
 
         </div>
@@ -71,7 +71,7 @@
             @csrf
 
 
-            <!-- Username -->
+            <!-- Nama pengguna -->
 
             <div class="auth-field">
 
@@ -79,7 +79,7 @@
                     for="username"
                     class="auth-label"
                 >
-                    Username
+                    Nama pengguna
                 </label>
 
                 <input
@@ -88,7 +88,7 @@
                     name="username"
                     class="auth-input"
                     value="{{ old('username') }}"
-                    placeholder="Choose a username"
+                    placeholder="Pilih nama pengguna"
                     required
                     autofocus
                 >
@@ -96,7 +96,7 @@
             </div>
 
 
-            <!-- Email -->
+            <!-- Alamat email -->
 
             <div class="auth-field">
 
@@ -104,7 +104,7 @@
                     for="email"
                     class="auth-label"
                 >
-                    Email
+                    Alamat email
                 </label>
 
                 <input
@@ -113,14 +113,14 @@
                     name="email"
                     class="auth-input"
                     value="{{ old('email') }}"
-                    placeholder="Enter your email"
+                    placeholder="Masukkan alamat email"
                     required
                 >
 
             </div>
 
 
-            <!-- Password -->
+            <!-- Kata sandi -->
 
             <div class="auth-field">
 
@@ -128,7 +128,7 @@
                     for="password"
                     class="auth-label"
                 >
-                    Password
+                    Kata sandi
                 </label>
 
                 <div class="password-wrapper">
@@ -138,7 +138,7 @@
                         id="password"
                         name="password"
                         class="auth-input"
-                        placeholder="Create a password"
+                    placeholder="Buat kata sandi"
                         required
                     >
 
@@ -156,7 +156,7 @@
             </div>
 
 
-            <!-- Confirm Password -->
+            <!-- Confirm Kata sandi -->
 
             <div class="auth-field">
 
@@ -164,7 +164,7 @@
                     for="password_confirmation"
                     class="auth-label"
                 >
-                    Confirm Password
+                    Konfirmasi kata sandi
                 </label>
 
                 <div class="password-wrapper">
@@ -174,7 +174,7 @@
                         id="password_confirmation"
                         name="password_confirmation"
                         class="auth-input"
-                        placeholder="Confirm your password"
+                        placeholder="Masukkan kembali kata sandi"
                         required
                     >
 
@@ -199,7 +199,7 @@
                 class="btn-blodora"
             >
                 <span class="btn-text">
-                    Register
+                    Daftar
                 </span>
 
                 <span class="btn-loading d-none">
@@ -211,25 +211,8 @@
         </form>
 
 
-        <div class="auth-divider">
-            OR
-        </div>
-
-
-        <button
-            type="button"
-            class="btn-google"
-        >
-            <span class="google-icon">
-                G
-            </span>
-
-            Continue with Google
-        </button>
-
-
         <div class="auth-footer">
-            By registering, you agree to our terms.
+            Dengan mendaftar, Anda menyetujui ketentuan yang berlaku.
         </div>
 
     </div>

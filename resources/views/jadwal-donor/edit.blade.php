@@ -27,7 +27,7 @@
         @include('jadwal-donor.form', ['jadwalDonor' => $jadwalDonor])
 
         <div class="admin-footer">
-            <span>Blodora Admin Panel</span>
+            <span>Panel Admin Blodora</span>
             <span>Sistem Donor Darah</span>
         </div>
     </main>

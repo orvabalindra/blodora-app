@@ -82,7 +82,7 @@
 
                         @if ($pemeriksaan->pendaftaran_id === null && $pemeriksaan->riwayatDonors->isEmpty())
                             <a href="{{ route('pemeriksaan.edit', $pemeriksaan) }}" class="admin-btn-primary">
-                                Edit
+                                Ubah
                             </a>
                         @endif
 
@@ -116,7 +116,7 @@
                         <div class="admin-detail-item full-width">
                             <span class="admin-detail-label">Pendaftaran</span>
                             <a href="{{ route('pendaftaran-donor.admin.index') }}" class="admin-table-link">
-                                Screening dari pendaftaran #{{ $pemeriksaan->pendaftaran_id }}
+                                Lihat pendaftaran donor
                             </a>
                             <span class="admin-detail-sub-label">
                                 Hasil screening terhubung dan dikelola melalui alur pendaftaran donor.
@@ -128,7 +128,7 @@
                         <div class="admin-detail-item full-width">
                             <span class="admin-detail-label">Riwayat Donor</span>
                             <a href="{{ route('riwayat-donor.show', $riwayatDonor) }}" class="admin-table-link">
-                                Riwayat #{{ $riwayatDonor->id_riwayat_donor }}
+                                Riwayat donor {{ $riwayatDonor->tanggal_donor?->translatedFormat('d M Y') ?? '' }}
                             </a>
                         </div>
                     @endforeach
@@ -268,7 +268,7 @@
             <div class="admin-footer">
 
                 <span>
-                    Blodora Admin Panel
+                    Panel Admin Blodora
                 </span>
 
                 <span>

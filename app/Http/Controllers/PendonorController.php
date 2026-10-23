@@ -44,6 +44,7 @@ class PendonorController extends Controller
             'golongan_darah' => ['required', 'in:A,B,AB,O'],
             'rhesus' => ['required', 'in:+,-'],
             'berat_badan' => ['required', 'integer', 'min:1'],
+            'tinggi_badan' => ['nullable', 'numeric', 'between:50,250'],
         ]);
 
         $pendonor = DB::transaction(function () use ($validated): Pendonor {
@@ -67,6 +68,7 @@ class PendonorController extends Controller
                 'golongan_darah' => $validated['golongan_darah'],
                 'rhesus' => $validated['rhesus'],
                 'berat_badan' => $validated['berat_badan'],
+                'tinggi_badan' => $validated['tinggi_badan'] ?? null,
             ]);
         });
 
@@ -80,14 +82,30 @@ class PendonorController extends Controller
      *
      * Khusus admin.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pendonors = Pendonor::withCount([
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $pendonors = Pendonor::query()->withCount([
             'pendaftarans',
             'pemeriksaans',
             'riwayatDonor',
             'stokDarahs',
-        ])->latest()->get();
+        ])
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $search = trim((string) $request->query('q'));
+
+                $query->where(function ($query) use ($search): void {
+                    $query->where('nama_lengkap', 'like', "{$search}%")
+                        ->orWhere('nik', 'like', "{$search}%")
+                        ->orWhere('no_hp', 'like', "{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view(
             'pendonor.index',
@@ -198,7 +216,10 @@ class PendonorController extends Controller
             'berat_badan' => [
                 'required',
                 'integer',
+                'min:1',
             ],
+
+            'tinggi_badan' => ['nullable', 'numeric', 'between:50,250'],
         ]);
 
         $pendonor->update($validated);
@@ -304,7 +325,10 @@ class PendonorController extends Controller
             'berat_badan' => [
                 'required',
                 'integer',
+                'min:1',
             ],
+
+            'tinggi_badan' => ['nullable', 'numeric', 'between:50,250'],
         ]);
 
         $validated['user_id'] = Auth::id();
@@ -349,5 +373,41 @@ class PendonorController extends Controller
             'pendonor.profile-show',
             compact('pendonor')
         );
+    }
+
+    public function editProfile(): View|RedirectResponse
+    {
+        $pendonor = Auth::user()->pendonor;
+
+        if (! $pendonor) {
+            return redirect()->route('pendonor.profile.create');
+        }
+
+        return view('pendonor.profile-edit', compact('pendonor'));
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $pendonor = $request->user()->pendonor;
+
+        if (! $pendonor) {
+            return redirect()->route('pendonor.profile.create');
+        }
+
+        $validated = $request->validate([
+            'nik' => ['required', 'string', Rule::unique('pendonors', 'nik')->ignore($pendonor->id)],
+            'nama_lengkap' => ['required', 'string', 'max:255'],
+            'no_hp' => ['required', 'string', 'max:20'],
+            'alamat' => ['required', 'string'],
+            'golongan_darah' => ['required', 'in:A,B,AB,O'],
+            'rhesus' => ['required', 'in:+,-'],
+            'berat_badan' => ['required', 'integer', 'between:1,300'],
+            'tinggi_badan' => ['nullable', 'numeric', 'between:50,250'],
+        ]);
+
+        $pendonor->update($validated);
+
+        return redirect()->route('pendonor.profile')
+            ->with('success', 'Profil berhasil diperbarui. Perubahan berat/tinggi badan akan dipakai pada screening berikutnya.');
     }
 }

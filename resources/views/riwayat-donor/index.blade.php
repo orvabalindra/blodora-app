@@ -72,27 +72,22 @@
                     </h3>
 
                     <p>
-                        Daftar seluruh aktivitas donor darah.
+                        Riwayat donor yang tercatat otomatis setelah petugas menyelesaikan pendaftaran donor.
                     </p>
 
                 </div>
 
 
-                <div class="admin-page-actions">
-
-                    <a
-                        href="{{ route('riwayat-donor.create') }}"
-                        class="admin-btn-primary"
-                    >
-                        + Tambah Riwayat
-                    </a>
-
-                </div>
-
             </div>
 
 
             {{-- SUCCESS MESSAGE --}}
+            @include('components.admin-list-search', [
+                'action' => route('riwayat-donor.index'),
+                'items' => $riwayatDonors,
+                'placeholder' => 'Cari nama pendonor atau status donor',
+            ])
+
             @if (session('success'))
 
                 <div class="admin-form-alert admin-form-alert-success">
@@ -138,7 +133,7 @@
 
                                 {{-- NO --}}
                                 <td>
-                                    {{ $loop->iteration }}
+                                    {{ $loop->iteration + (($riwayatDonors->currentPage() - 1) * $riwayatDonors->perPage()) }}
                                 </td>
 
 
@@ -189,7 +184,7 @@
                                             href="{{ route('pemeriksaan.show', $riwayat->pemeriksaan) }}"
                                             class="admin-table-link"
                                         >
-                                            #{{ $riwayat->pemeriksaan->id_pemeriksaan }}
+                                            {{ $riwayat->pemeriksaan->tanggal_pemeriksaan?->translatedFormat('d M Y') ?? 'Lihat pemeriksaan' }}
                                         </a>
 
                                     @else
@@ -251,7 +246,7 @@
                                             <a
                                                 href="{{ route('riwayat-donor.edit', $riwayat) }}"
                                                 class="admin-action-btn edit"
-                                                title="Edit"
+                                                title="Ubah"
                                             >
                                                 <svg viewBox="0 0 24 24" aria-hidden="true">
                                                     <path d="M12 20h9"></path>
@@ -302,11 +297,11 @@
                                         </div>
 
                                         <strong>
-                                            Belum ada data riwayat donor.
+                                            {{ request()->filled('q') ? 'Tidak ada riwayat donor yang cocok dengan pencarian.' : 'Belum ada data riwayat donor.' }}
                                         </strong>
 
                                         <span>
-                                            Data riwayat donor akan muncul di sini.
+                                            Riwayat akan tercatat otomatis setelah donor ditandai selesai pada halaman pendaftaran.
                                         </span>
 
                                     </div>
@@ -326,11 +321,13 @@
         </div>
 
 
+        <div class="mt-4">{{ $riwayatDonors->links() }}</div>
+
         {{-- FOOTER --}}
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

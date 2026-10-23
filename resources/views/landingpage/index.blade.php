@@ -4,13 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Blodora membantu pendonor menemukan jadwal donor dan melihat informasi ketersediaan stok darah.">
+    <meta name="theme-color" content="#ffffff">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/landing.css', 'resources/js/app.js'])
 
     <title>Blodora - Donor Darah</title>
 </head>
 
 <body>
+
+    <a class="skip-link" href="#konten-utama">Lewati ke konten utama</a>
 
     <!-- =====================================================
          NAVBAR
@@ -21,9 +25,9 @@
         <div class="container">
 
             <!-- LOGO -->
-            <a class="navbar-brand d-flex align-items-center" href="#beranda">
+            <a class="navbar-brand d-flex align-items-center" href="#beranda" aria-label="Blodora, ke beranda">
                 <img
-                    src="{{ asset('images/blodora2.png') }}"
+                    src="{{ asset('images/Blodora2.png') }}"
                     alt="Blodora"
                     class="blodora-logo">
             </a>
@@ -37,7 +41,7 @@
                 data-bs-target="#navbarBlodora"
                 aria-controls="navbarBlodora"
                 aria-expanded="false"
-                aria-label="Toggle navigation">
+                aria-label="Buka atau tutup navigasi utama">
 
                 <span class="navbar-toggler-icon"></span>
 
@@ -55,6 +59,7 @@
                     <li class="nav-item">
                         <a
                             class="nav-link active"
+                            aria-current="location"
                             href="#beranda">
 
                             Beranda
@@ -106,8 +111,12 @@
                     href="{{ route('login') }}"
                     class="btn btn-login">
 
-                    Login
+                    Masuk
 
+                </a>
+
+                <a href="{{ route('register') }}" class="btn btn-register">
+                    Daftar
                 </a>
 
             </div>
@@ -122,6 +131,7 @@
          HERO / BERANDA
     ====================================================== -->
 
+    <main id="konten-utama">
     <section
         id="beranda"
         class="hero"
@@ -129,7 +139,7 @@
 
         <div class="container">
 
-            <div class="hero-content">
+            <div class="hero-content" data-hero-motion>
 
                 <!-- SUBTITLE -->
                 <span class="hero-subtitle">
@@ -165,12 +175,12 @@
 
                 <!-- BUTTON -->
                 <a
-                    href="#donor"
+                    href="{{ route('register') }}"
                     class="btn-donor">
 
-                    Jadi Pendonor
+                    Daftar sebagai Pendonor
 
-                    <span>→</span>
+                    <span aria-hidden="true">&rarr;</span>
 
                 </a>
 
@@ -192,11 +202,9 @@
 
         <div class="container">
 
-            <div class="section-content">
+            <div class="section-content" data-reveal>
 
-                <span class="section-label">
-                    DONOR DARAH
-                </span>
+                <span class="section-label">ALUR DONOR</span>
 
                 <h2>
                     Satu Donor,
@@ -214,10 +222,10 @@
                 <div class="donor-cards">
 
                     <!-- CARD 1 -->
-                    <div class="info-card">
+                    <div class="info-card" data-reveal>
 
                         <div class="card-icon">
-                            🩸
+                            <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
                         </div>
 
                         <h3>
@@ -225,46 +233,39 @@
                         </h3>
 
                         <p>
-                            Daftarkan dirimu sebagai pendonor
-                            dan bantu memenuhi kebutuhan darah.
+                            Buat akun pendonor dan lengkapi profil agar petugas dapat memproses pendaftaranmu.
                         </p>
 
                     </div>
 
 
                     <!-- CARD 2 -->
-                    <div class="info-card">
+                    <div class="info-card" data-reveal>
 
                         <div class="card-icon">
-                            ❤️
+                            <i class="bi bi-calendar-check" aria-hidden="true"></i>
                         </div>
 
-                        <h3>
-                            Bantu Sesama
-                        </h3>
+                        <h3>Pilih Jadwal</h3>
 
                         <p>
-                            Setiap donor dapat menjadi bagian
-                            dari harapan bagi seseorang.
+                            Pilih jadwal donor yang tersedia, lalu datang ke lokasi sesuai waktu kegiatan.
                         </p>
 
                     </div>
 
 
                     <!-- CARD 3 -->
-                    <div class="info-card">
+                    <div class="info-card" data-reveal>
 
                         <div class="card-icon">
-                            ✓
+                            <i class="bi bi-clipboard2-check" aria-hidden="true"></i>
                         </div>
 
-                        <h3>
-                            Mudah & Terdata
-                        </h3>
+                        <h3>Screening dan Donor</h3>
 
                         <p>
-                            Data donor dikelola dengan sistem
-                            yang terorganisir.
+                            Petugas memeriksa kelayakan. Jika layak, donor dicatat dan stok bertambah setelah kegiatan selesai.
                         </p>
 
                     </div>
@@ -273,12 +274,12 @@
 
 
                 <a
-                    href="{{ route('login') }}"
+                    href="{{ route('register') }}"
                     class="btn-donor section-button">
 
-                    Mulai Donor
+                    Buat Akun Pendonor
 
-                    <span>→</span>
+                    <span aria-hidden="true">&rarr;</span>
 
                 </a>
 
@@ -299,25 +300,52 @@
         class="stock-section">
 
         <div class="container">
-            <div class="section-heading">
+            <div class="section-heading" data-reveal>
                 <span class="section-label">INFORMASI</span>
                 <h2>Stok <span>Darah</span></h2>
-                <p>Pantau ketersediaan stok darah yang tersedia di Blodora.</p>
+                <p>Jumlah kantong yang belum kedaluwarsa, dikelompokkan menurut golongan darah, rhesus, dan lokasi penyimpanan.</p>
             </div>
 
             <div class="stock-grid">
-                @foreach ($stokDarahs as $golonganDarah => $jumlahKantong)
-                    <div class="blood-card">
-                        <div class="blood-type">{{ $golonganDarah }}</div>
-                        <h3>Golongan {{ $golonganDarah }}</h3>
+                @foreach (['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $jenisDarah)
+                    @php
+                        $stokLokasi = $stokDarahPerGolongan->get($jenisDarah, collect());
+                        $jumlahKantong = $stokLokasi->sum('jumlah_kantong');
+                    @endphp
+
+                    <article class="blood-card" data-reveal>
+                        <div class="blood-type" aria-hidden="true">{{ $jenisDarah }}</div>
+                        <h3>Golongan {{ $jenisDarah }}</h3>
                         <p>{{ number_format($jumlahKantong) }} kantong</p>
                         <div class="stock-status {{ $jumlahKantong > 0 ? 'is-available' : 'is-empty' }}">
                             <span class="stock-status-dot" aria-hidden="true"></span>
                             {{ $jumlahKantong > 0 ? 'Tersedia' : 'Stok kosong' }}
                         </div>
-                    </div>
+
+                        <ul class="stock-location-list">
+                            @forelse ($stokLokasi as $stok)
+                                <li>
+                                    <span>{{ $stok->lokasi ?: 'Lokasi belum dicatat' }}</span>
+                                    <strong>{{ number_format($stok->jumlah_kantong) }} kantong</strong>
+                                </li>
+                            @empty
+                                <li><span>Belum ada stok aktif</span></li>
+                            @endforelse
+                        </ul>
+                    </article>
                 @endforeach
             </div>
+
+            <p class="stock-updated-at" data-reveal>
+                @if ($stokTerakhirDiperbarui)
+                    Pembaruan terakhir:
+                    {{ \Illuminate\Support\Carbon::parse($stokTerakhirDiperbarui)->translatedFormat('d F Y, H:i') }}
+                    · Waktu mengikuti zona {{ config('app.timezone') }}.
+                @else
+                    Belum ada stok aktif yang tercatat.
+                @endif
+            </p>
+            <p class="stock-disclaimer">Informasi dapat berubah setelah pencatatan donor, penyaluran, atau kedaluwarsa. Konfirmasikan ketersediaan sebelum datang.</p>
         </div>
     </section>
 
@@ -335,7 +363,7 @@
 
             <div class="about-content">
 
-                <div>
+                <div data-reveal>
 
                     <span class="section-label">
                         TENTANG BLODORA
@@ -349,20 +377,11 @@
                 </div>
 
 
-                <div>
+                <div data-reveal>
 
-                    <p>
-                        Blodora adalah sistem informasi donor darah
-                        yang membantu mengelola data pendonor,
-                        stok darah, dan riwayat donor secara
-                        terorganisir.
-                    </p>
-
-                    <p>
-                        Kami percaya bahwa sebuah tindakan kecil
-                        dapat memberikan dampak besar bagi kehidupan
-                        orang lain.
-                    </p>
+                    <p>Blodora membantu calon pendonor mengikuti alur donor: buat akun, lengkapi profil, pilih jadwal, jalani screening petugas, lalu donor jika dinyatakan layak.</p>
+                    <p>Stok bertambah setelah petugas mencatat donor selesai dan berkurang saat darah disalurkan. Informasi publik menampilkan stok yang masih aktif berdasarkan data sistem.</p>
+                    <a href="{{ route('register') }}" class="btn-donor">Mulai pendaftaran <span aria-hidden="true">&rarr;</span></a>
 
                 </div>
 
@@ -378,6 +397,8 @@
          FOOTER
     ====================================================== -->
 
+    </main>
+
     <footer class="blodora-footer">
 
         <div class="container">
@@ -385,7 +406,7 @@
             <div class="footer-content">
 
                 <img
-                    src="{{ asset('images/blodora2.png') }}"
+                    src="{{ asset('images/Blodora2.png') }}"
                     alt="Blodora"
                     class="footer-logo">
 
@@ -401,7 +422,7 @@
 
                 <span>
                     © {{ date('Y') }} Blodora.
-                    All rights reserved.
+                    Hak cipta dilindungi.
                 </span>
 
             </div>

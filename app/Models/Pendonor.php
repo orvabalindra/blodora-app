@@ -19,6 +19,7 @@ class Pendonor extends Model
         'golongan_darah',
         'rhesus',
         'berat_badan',
+        'tinggi_badan',
     ];
 
     public function user(): BelongsTo

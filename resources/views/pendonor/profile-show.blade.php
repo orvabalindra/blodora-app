@@ -6,129 +6,7 @@
 
 <div class="donor-dashboard">
 
-    {{-- SIDEBAR --}}
-    <aside class="donor-sidebar">
-
-        <div class="donor-sidebar-brand">
-
-            <img
-                src="{{ asset('images/Blodora2.png') }}"
-                alt="Blodora"
-                class="donor-sidebar-logo"
-            >
-
-            <span class="donor-brand-subtitle">
-                Blood Donation System
-            </span>
-
-        </div>
-
-
-        <nav class="donor-sidebar-menu">
-
-            <div class="donor-menu-title">
-                MENU
-            </div>
-
-
-            <a
-                href="{{ route('dashboard.pendonor') }}"
-                class="donor-menu-item"
-            >
-                <span class="donor-menu-icon">⌂</span>
-                <span>Dashboard</span>
-            </a>
-
-
-            <a
-                href="{{ route('pendonor.profile') }}"
-                class="donor-menu-item active"
-            >
-                <span class="donor-menu-icon">♙</span>
-                <span>Profil Saya</span>
-            </a>
-
-
-            <a
-                href="{{ route('pemeriksaan.index') }}"
-                class="donor-menu-item"
-            >
-                <span class="donor-menu-icon">♡</span>
-                <span>Pemeriksaan Saya</span>
-            </a>
-
-
-            <a
-                href="{{ route('riwayat-donor.index') }}"
-                class="donor-menu-item"
-            >
-                <span class="donor-menu-icon">↻</span>
-                <span>Riwayat Donor</span>
-            </a>
-
-
-            <div class="donor-menu-separator"></div>
-
-
-            <div class="donor-menu-title">
-                LAINNYA
-            </div>
-
-
-            <a
-                href="{{ route('pengaturan') }}"
-                class="donor-menu-item"
-            >
-                <span class="donor-menu-icon">⚙</span>
-                <span>Pengaturan</span>
-            </a>
-
-        </nav>
-
-
-        <div class="donor-sidebar-bottom">
-
-            <div class="donor-profile-mini">
-
-                <div class="donor-avatar">
-                    {{ strtoupper(substr($pendonor->nama_lengkap, 0, 1)) }}
-                </div>
-
-                <div class="donor-profile-info">
-
-                    <strong>
-                        {{ Auth::user()->username }}
-                    </strong>
-
-                    <span>
-                        Pendonor
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <form
-                action="{{ route('logout') }}"
-                method="POST"
-            >
-
-                @csrf
-
-                <button
-                    type="submit"
-                    class="donor-logout-btn"
-                >
-                    <span>↪</span>
-                    <span>Logout</span>
-                </button>
-
-            </form>
-
-        </div>
-
-    </aside>
+    @include('components.donor-sidebar')
 
 
     {{-- MAIN --}}
@@ -222,6 +100,8 @@
 
             </div>
 
+            @if (session('success'))<div class="alert alert-success" role="status">{{ session('success') }}</div>@endif
+
 
             <div class="admin-detail-grid">
 
@@ -235,6 +115,11 @@
                         {{ $pendonor->nik }}
                     </strong>
 
+                </div>
+
+                <div class="admin-detail-item">
+                    <span class="admin-detail-label">Tinggi Badan</span>
+                    <strong class="admin-detail-value">{{ $pendonor->tinggi_badan ? number_format($pendonor->tinggi_badan, 1) . ' cm' : 'Belum diisi' }}</strong>
                 </div>
 
 
@@ -371,7 +256,7 @@
                 <div class="admin-detail-item">
 
                     <span class="admin-detail-label">
-                        Username
+                        Nama pengguna
                     </span>
 
                     <strong class="admin-detail-value">
@@ -400,12 +285,13 @@
 
         {{-- BACK --}}
         <div class="donor-form-actions">
+            <a href="{{ route('pendonor.profile.edit') }}" class="donor-btn-primary">Ubah Profil</a>
 
             <a
                 href="{{ route('dashboard.pendonor') }}"
                 class="donor-btn-secondary"
             >
-                Kembali ke Dashboard
+                Kembali ke Dasbor
             </a>
 
         </div>
@@ -415,7 +301,7 @@
         <div class="donor-footer">
 
             <span>
-                Blodora Donor Panel
+                Panel Pendonor Blodora
             </span>
 
             <span>

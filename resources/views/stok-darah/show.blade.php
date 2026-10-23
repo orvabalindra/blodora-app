@@ -81,25 +81,11 @@
                         {{ $stokDarah->golongan_darah }}{{ $stokDarah->rhesus }}
                     </h3>
 
-                    <p>
-                        ID Stok #{{ $stokDarah->id_stok_darah }}
-                    </p>
 
                 </div>
 
 
                 <div class="admin-page-actions">
-
-                    {{-- EDIT --}}
-                    @if ($stokDarah->pendaftaran_id === null && $stokDarah->penyalurans->isEmpty())
-                        <a
-                            href="{{ route('stok-darah.edit', $stokDarah) }}"
-                            class="admin-btn-primary"
-                        >
-                            Edit
-                        </a>
-                    @endif
-
 
                     {{-- KEMBALI --}}
                     <a
@@ -146,6 +132,15 @@
                             Lihat profil pendonor
                         </a>
                     @endif
+
+                </div>
+
+
+                {{-- GOLONGAN DARAH --}}
+                <div class="admin-detail-item">
+
+                    <span class="admin-detail-label">Lokasi Stok</span>
+                    <strong class="admin-detail-value">{{ $stokDarah->lokasi ?? 'Belum dicatat' }}</strong>
 
                 </div>
 
@@ -209,7 +204,7 @@
                     <div class="admin-detail-item">
                         <span class="admin-detail-label">Sumber Batch</span>
                         <a href="{{ route('pendaftaran-donor.admin.index') }}" class="admin-table-link">
-                            Pendaftaran donor #{{ $stokDarah->pendaftaran_id }}
+                            Lihat pendaftaran donor
                         </a>
                     </div>
                 @endif
@@ -243,7 +238,7 @@
                                             href="{{ route('permintaan-darah.show', $penyaluran->permintaanDarah) }}"
                                             class="admin-table-link"
                                         >
-                                            #{{ $penyaluran->permintaan_darah_id }}
+                                            {{ $penyaluran->permintaanDarah?->rumahSakit?->nama_rs ?? 'Lihat permintaan darah' }}
                                         </a>
                                     </td>
                                     <td>{{ $penyaluran->permintaanDarah?->rumahSakit?->nama_rs ?? '-' }}</td>
@@ -257,23 +252,6 @@
             @endif
 
 
-            {{-- DELETE --}}
-            <div class="admin-form-actions">
-
-                @if ($stokDarah->pendaftaran_id === null && $stokDarah->penyalurans->isEmpty())
-                    <form
-                        action="{{ route('stok-darah.destroy', $stokDarah) }}"
-                        method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus data stok darah ini?')"
-                    >
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="admin-btn-secondary">Hapus</button>
-                    </form>
-                @endif
-
-            </div>
-
         </div>
 
 
@@ -281,7 +259,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

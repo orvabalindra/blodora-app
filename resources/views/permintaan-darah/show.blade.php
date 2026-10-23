@@ -69,7 +69,7 @@
                     </span>
 
                     <h3>
-                        Permintaan #{{ $permintaanDarah->id_permintaan_darah }}
+                        Detail Permintaan Darah
                     </h3>
 
                     <p>
@@ -85,7 +85,7 @@
                             href="{{ route('permintaan-darah.edit', $permintaanDarah) }}"
                             class="admin-btn-primary"
                         >
-                            Edit
+                            Ubah
                         </a>
                     @endif
 
@@ -119,6 +119,17 @@
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
+                </div>
+            @endif
+
+            @if ($permintaanDarah->status === 'diterima' && $sisaPermintaan > $stokCocokTersedia)
+                <div class="admin-form-alert admin-form-alert-danger" role="alert">
+                    <strong>Stok belum mencukupi.</strong>
+                    Untuk {{ $permintaanDarah->golongan_darah }}{{ $permintaanDarah->rhesus }} tersedia {{ $stokCocokTersedia }} kantong layak, sementara masih dibutuhkan {{ $sisaPermintaan }} kantong.
+                </div>
+            @elseif ($permintaanDarah->status === 'diterima')
+                <div class="admin-form-alert admin-form-alert-success" role="status">
+                    Stok cocok tersedia: {{ $stokCocokTersedia }} kantong. Kebutuhan yang tersisa {{ $sisaPermintaan }} kantong.
                 </div>
             @endif
 
@@ -307,11 +318,10 @@
                                                 href="{{ route('stok-darah.show', $penyaluran->stokDarah) }}"
                                                 class="admin-table-link"
                                             >
-                                                Batch #{{ $penyaluran->stok_darah_id }}
-                                                ({{ $penyaluran->stokDarah->golongan_darah }}{{ $penyaluran->stokDarah->rhesus }})
+                                                Stok {{ $penyaluran->stokDarah->golongan_darah }}{{ $penyaluran->stokDarah->rhesus }}
                                             </a>
                                         @else
-                                            Batch #{{ $penyaluran->stok_darah_id }}
+                                            Stok tidak tersedia
                                         @endif
                                     </td>
                                     <td>{{ $penyaluran->stokDarah?->tanggal_kadaluarsa?->format('d M Y') ?? '-' }}</td>
@@ -326,7 +336,7 @@
 
 
             {{-- ACTION --}}
-            <div class="admin-form-actions">
+            <div class="admin-form-actions admin-request-actions {{ $permintaanDarah->status === 'diterima' ? 'is-delivery' : 'is-decision' }}">
 
                 <a
                     href="{{ route('permintaan-darah.index') }}"
@@ -412,7 +422,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

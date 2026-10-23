@@ -11,7 +11,7 @@
             <div>
                 <span class="donor-page-label">KEGIATAN DONOR</span>
                 <h1>Jadwal Donor</h1>
-                <p>Pilih kegiatan untuk mengajukan pendaftaran. Petugas UTD akan melakukan screening sebelum donor.</p>
+                <p>Alurnya: pilih jadwal, tunggu screening petugas, lakukan donor jika dinyatakan layak, lalu petugas mencatat kantong ke stok darah.</p>
             </div>
 
             <div class="donor-topbar-right">
@@ -61,8 +61,10 @@
 
                 <div class="row g-3">
                     @forelse ($jadwalDonors as $jadwalDonor)
-                        @php($pendaftaran = $pendaftaranByJadwal->get($jadwalDonor->id))
-                        @php($tersedia = $jadwalDonor->kuota - $jadwalDonor->pendaftar_aktif_count)
+                        @php
+                            $pendaftaran = $pendaftaranByJadwal->get($jadwalDonor->id);
+                            $tersedia = $jadwalDonor->kuota - $jadwalDonor->pendaftar_aktif_count;
+                        @endphp
 
                         <div class="col-md-6 col-xl-4">
                             <article class="donor-panel h-100">
@@ -93,18 +95,46 @@
                                     </div>
                                 </div>
 
+                                <div class="mt-3">
+                                    @if ($tersedia > 0)
+                                        <span class="badge text-bg-success">Pendaftaran dibuka</span>
+                                    @else
+                                        <span class="badge text-bg-warning">Kuota penuh</span>
+                                    @endif
+                                </div>
+
                                 @if ($pendaftaran && $pendaftaran->status !== 'dibatalkan')
                                     <div class="alert alert-secondary mt-3 mb-0">
                                         Status pendaftaran:
-                                        <strong>{{ str_replace('_', ' ', ucfirst($pendaftaran->status)) }}</strong>
+                                        @php
+                                            $waktuMulaiScreening = $jadwalDonor->tanggal->copy()->setTimeFromTimeString($jadwalDonor->waktu_mulai);
+                                            $statusTampilan = $pendaftaran->status === 'menunggu_screening'
+                                                ? (now()->greaterThanOrEqualTo($waktuMulaiScreening) ? 'Proses screening' : 'Terdaftar')
+                                                : ucwords(str_replace('_', ' ', $pendaftaran->status));
+                                            if ($pendaftaran->persetujuan_admin === 'menunggu') {
+                                                $statusTampilan = 'Menunggu persetujuan admin';
+                                            } elseif ($pendaftaran->persetujuan_admin === 'ditolak') {
+                                                $statusTampilan = 'Pengajuan ditolak';
+                                            }
+                                        @endphp
+                                        <strong>{{ $statusTampilan }}</strong>
+                                        @if ($pendaftaran->persetujuan_admin === 'menunggu')
+                                            <div class="small mt-1">Admin sedang meninjau pengajuanmu.</div>
+                                        @elseif ($pendaftaran->persetujuan_admin === 'ditolak')
+                                            <div class="small mt-1">Alasan admin: {{ $pendaftaran->catatan_admin }}</div>
+                                        @else
+                                            <div class="small mt-1">Pengajuan disetujui. Screening dan pencatatan stok diproses pada tahapan berikutnya.</div>
+                                        @endif
                                     </div>
-                                @elseif ($tersedia > 0)
-                                    <form method="POST" action="{{ route('donor.pendaftaran.store', $jadwalDonor) }}">
-                                        @csrf
-                                        <button class="donor-btn-primary donor-full-btn" type="submit">Daftar Kegiatan</button>
-                                    </form>
                                 @else
-                                    <button class="donor-btn-secondary donor-full-btn opacity-50" type="button" disabled>Kuota penuh</button>
+                                    @if ($tersedia > 0)
+                                        <form method="POST" action="{{ route('donor.pendaftaran.store', $jadwalDonor) }}">
+                                            @csrf
+                                            <button class="donor-btn-primary donor-full-btn" type="submit">Daftar Kegiatan</button>
+                                        </form>
+                                    @else
+                                        <button class="donor-btn-secondary donor-full-btn opacity-50" type="button" disabled>Kuota penuh</button>
+                                    @endif
                                 @endif
                             </article>
                         </div>

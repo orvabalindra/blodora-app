@@ -6,6 +6,8 @@ use App\Models\PermintaanDarah;
 use App\Models\PermintaanDarahPenyaluran;
 use App\Models\RumahSakit;
 use App\Models\StokDarah;
+use App\Models\User;
+use App\Notifications\PermintaanDarahStatusNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,12 +15,28 @@ use Illuminate\View\View;
 
 class PermintaanDarahController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
         $permintaanDarahs = PermintaanDarah::with('rumahSakit')
             ->withCount('penyalurans')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $search = trim((string) $request->query('q'));
+
+                $query->where(function ($query) use ($search): void {
+                    $query->where('golongan_darah', strtoupper($search))
+                        ->orWhere('status', mb_strtolower($search))
+                        ->orWhereHas('rumahSakit', function ($rumahSakitQuery) use ($search): void {
+                            $rumahSakitQuery->where('nama_rs', 'like', "{$search}%");
+                        });
+                });
+            })
             ->latest('id_permintaan_darah')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('permintaan-darah.index', compact('permintaanDarahs'));
     }
@@ -30,8 +48,51 @@ class PermintaanDarahController extends Controller
         return view('permintaan-darah.create', compact('rumahSakits'));
     }
 
+    public function notifikasi(Request $request): View
+    {
+        $notifications = $request->user()->notifications()
+            ->where('type', PermintaanDarahStatusNotification::class)
+            ->latest()
+            ->paginate(20);
+        $unreadCount = $request->user()->unreadNotifications()
+            ->where('type', PermintaanDarahStatusNotification::class)
+            ->count();
+
+        return view('permintaan-darah.notifikasi', compact('notifications', 'unreadCount'));
+    }
+
+    public function bacaNotifikasi(Request $request, string $id): RedirectResponse
+    {
+        $notification = $request->user()->notifications()
+            ->where('type', PermintaanDarahStatusNotification::class)
+            ->whereKey($id)
+            ->firstOrFail();
+        $notification->markAsRead();
+
+        return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
+    }
+
+    public function bacaSemuaNotifikasi(Request $request): RedirectResponse
+    {
+        $request->user()->unreadNotifications()
+            ->where('type', PermintaanDarahStatusNotification::class)
+            ->update(['read_at' => now(), 'updated_at' => now()]);
+
+        return back()->with('success', 'Semua notifikasi permintaan darah ditandai sudah dibaca.');
+    }
+
+    public function hapusSemuaNotifikasi(Request $request): RedirectResponse
+    {
+        $request->user()->notifications()
+            ->where('type', PermintaanDarahStatusNotification::class)
+            ->delete();
+
+        return back()->with('success', 'Semua notifikasi permintaan darah berhasil dihapus.');
+    }
+
     public function store(Request $request): RedirectResponse
     {
+        $this->mergeDateParts($request);
         $validated = $request->validate([
             'rumah_sakit_id' => ['required', 'exists:rumah_sakits,id_rs'],
             'tanggal_permintaan' => ['required', 'date'],
@@ -40,10 +101,17 @@ class PermintaanDarahController extends Controller
             'jumlah_minta' => ['required', 'integer', 'min:1'],
         ]);
 
-        PermintaanDarah::create($validated + [
+        $permintaanDarah = PermintaanDarah::create($validated + [
             'jumlah_terpenuhi' => 0,
             'status' => 'diproses',
         ]);
+
+        $permintaanDarah->load('rumahSakit');
+        $this->notifyAdmins(
+            $permintaanDarah,
+            'Permintaan darah baru',
+            'Permintaan '.$permintaanDarah->golongan_darah.$permintaanDarah->rhesus.' sebanyak '.$permintaanDarah->jumlah_minta.' kantong dari '.($permintaanDarah->rumahSakit?->nama_rs ?? 'rumah sakit').' menunggu keputusan.',
+        );
 
         return redirect()
             ->route('permintaan-darah.index')
@@ -58,7 +126,16 @@ class PermintaanDarahController extends Controller
             'penyalurans.diserahkanOleh',
         ]);
 
-        return view('permintaan-darah.show', compact('permintaanDarah'));
+        $stokCocokTersedia = StokDarah::query()
+            ->where('golongan_darah', $permintaanDarah->golongan_darah)
+            ->where('rhesus', $permintaanDarah->rhesus)
+            ->whereDate('tanggal_kadaluarsa', '>=', today())
+            ->where('jumlah_kantong', '>', 0)
+            ->sum('jumlah_kantong');
+
+        $sisaPermintaan = max(0, $permintaanDarah->jumlah_minta - $permintaanDarah->jumlah_terpenuhi);
+
+        return view('permintaan-darah.show', compact('permintaanDarah', 'stokCocokTersedia', 'sisaPermintaan'));
     }
 
     public function edit(PermintaanDarah $permintaanDarah): View|RedirectResponse
@@ -81,6 +158,7 @@ class PermintaanDarahController extends Controller
         Request $request,
         PermintaanDarah $permintaanDarah
     ): RedirectResponse {
+        $this->mergeDateParts($request);
         $validated = $request->validate([
             'rumah_sakit_id' => ['required', 'exists:rumah_sakits,id_rs'],
             'tanggal_permintaan' => ['required', 'date'],
@@ -145,6 +223,13 @@ class PermintaanDarahController extends Controller
         $message = $validated['status'] === 'diterima'
             ? 'Permintaan disetujui. Stok akan berkurang setelah penyerahan dicatat.'
             : 'Permintaan berhasil ditolak.';
+
+        $permintaanDarah->load('rumahSakit');
+        $this->notifyAdmins(
+            $permintaanDarah,
+            $validated['status'] === 'diterima' ? 'Permintaan darah diterima' : 'Permintaan darah ditolak',
+            'Permintaan dari '.($permintaanDarah->rumahSakit?->nama_rs ?? 'rumah sakit').' untuk '.$permintaanDarah->golongan_darah.$permintaanDarah->rhesus.' berstatus '.$validated['status'].'.',
+        );
 
         return redirect()
             ->route('permintaan-darah.show', $permintaanDarah)
@@ -244,6 +329,13 @@ class PermintaanDarahController extends Controller
             return back()->withErrors(['jumlah_kantong' => $pesan]);
         }
 
+        $permintaanDarah->refresh()->load('rumahSakit');
+        $this->notifyAdmins(
+            $permintaanDarah,
+            'Penyaluran permintaan diperbarui',
+            'Penyaluran '.$validated['jumlah_kantong'].' kantong ke '.($permintaanDarah->rumahSakit?->nama_rs ?? 'rumah sakit').' dicatat. Total terpenuhi '.$permintaanDarah->jumlah_terpenuhi.' dari '.$permintaanDarah->jumlah_minta.' kantong.',
+        );
+
         return redirect()
             ->route('permintaan-darah.show', $permintaanDarah)
             ->with('success', 'Penyerahan darah berhasil dicatat dan stok telah diperbarui.');
@@ -274,5 +366,16 @@ class PermintaanDarahController extends Controller
         return redirect()
             ->route('permintaan-darah.index')
             ->with('success', 'Permintaan darah berhasil dihapus.');
+    }
+
+    private function notifyAdmins(PermintaanDarah $permintaanDarah, string $title, string $message): void
+    {
+        User::query()->where('role', 'admin')->get()->each(
+            fn (User $admin) => $admin->notify(new PermintaanDarahStatusNotification(
+                $title,
+                $message,
+                (int) $permintaanDarah->getKey(),
+            )),
+        );
     }
 }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Pemeriksaan')
+@section('title', 'Ubah Pemeriksaan')
 
 @section('content')
 
@@ -23,7 +23,7 @@
                 </span>
 
                 <h1>
-                    Edit Pemeriksaan
+                    Ubah Pemeriksaan
                 </h1>
 
                 <p>
@@ -192,17 +192,7 @@
                                 Tanggal Pemeriksaan
                             </label>
 
-                            <input
-                                type="date"
-                                name="tanggal_pemeriksaan"
-                                id="tanggal_pemeriksaan"
-                                class="admin-form-control @error('tanggal_pemeriksaan') is-invalid @enderror"
-                                value="{{ old(
-                                    'tanggal_pemeriksaan',
-                                    optional($pemeriksaan->tanggal_pemeriksaan)->format('Y-m-d')
-                                ) }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan', optional($pemeriksaan->tanggal_pemeriksaan)->format('Y-m-d'))" />
 
                             @error('tanggal_pemeriksaan')
 
@@ -416,7 +406,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

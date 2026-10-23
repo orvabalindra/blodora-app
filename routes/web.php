@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JadwalDonorController;
+use App\Http\Controllers\LaporanBulananController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PemeriksaanController;
 use App\Http\Controllers\PendaftaranDonorController;
@@ -26,11 +27,11 @@ Route::get('/', [HomeController::class, 'index'])
     ->name('home');
 
 Route::get('/donor', function () {
-    return view('landingpage.donor');
+    return redirect()->to(route('home').'#donor');
 })->name('donor');
 
 Route::get('/stok-darah-info', function () {
-    return view('landingpage.stok-darah');
+    return redirect()->to(route('home').'#stok-darah');
 })->name('stok.darah');
 
 /*
@@ -50,6 +51,7 @@ Route::get('/register', [RegisterController::class, 'showRegister'])
     ->name('register');
 
 Route::post('/register', [RegisterController::class, 'register'])
+    ->middleware('throttle:register')
     ->name('register.process');
 
 Route::post('/logout', [AuthController::class, 'logout'])
@@ -100,6 +102,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
         DashboardController::class,
         'index',
     ])->name('dashboard');
+
+    Route::get('/laporan-bulanan', LaporanBulananController::class)
+        ->name('laporan.bulanan');
+
+    Route::get('/admin/notifikasi/permintaan-darah', [PermintaanDarahController::class, 'notifikasi'])
+        ->name('admin.permintaan-notifikasi.index');
+    Route::post('/admin/notifikasi/permintaan-darah/{id}/read', [PermintaanDarahController::class, 'bacaNotifikasi'])
+        ->name('admin.permintaan-notifikasi.read');
+    Route::post('/admin/notifikasi/permintaan-darah/read-all', [PermintaanDarahController::class, 'bacaSemuaNotifikasi'])
+        ->name('admin.permintaan-notifikasi.read-all');
+    Route::delete('/admin/notifikasi/permintaan-darah', [PermintaanDarahController::class, 'hapusSemuaNotifikasi'])
+        ->name('admin.permintaan-notifikasi.destroy-all');
 
     /*
     |--------------------------------------------------------------------------
@@ -177,6 +191,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/pendaftaran-donor', [PendaftaranDonorController::class, 'adminIndex'])
         ->name('pendaftaran-donor.admin.index');
+    Route::put('/pendaftaran-donor/{pendaftaran}/persetujuan', [PendaftaranDonorController::class, 'persetujuan'])
+        ->name('pendaftaran-donor.persetujuan');
     Route::put('/pendaftaran-donor/{pendaftaran}/screening', [PendaftaranDonorController::class, 'screening'])
         ->name('pendaftaran-donor.screening');
     Route::patch('/pendaftaran-donor/{pendaftaran}/status', [PendaftaranDonorController::class, 'ubahStatus'])
@@ -214,6 +230,14 @@ Route::middleware(['auth', 'pendonor'])->group(function () {
         ->name('donor.pendaftaran.store');
     Route::get('/donor/pendaftaran', [PendaftaranDonorController::class, 'riwayat'])
         ->name('donor.pendaftaran.index');
+    Route::get('/donor/notifikasi', [PendaftaranDonorController::class, 'notifikasi'])
+        ->name('donor.notifikasi.index');
+    Route::post('/donor/notifikasi/{id}/read', [PendaftaranDonorController::class, 'bacaNotifikasi'])
+        ->name('donor.notifikasi.read');
+    Route::post('/donor/notifikasi/read-all', [PendaftaranDonorController::class, 'bacaSemuaNotifikasi'])
+        ->name('donor.notifikasi.read-all');
+    Route::delete('/donor/notifikasi', [PendaftaranDonorController::class, 'hapusSemuaNotifikasi'])
+        ->name('donor.notifikasi.destroy-all');
     Route::delete('/donor/pendaftaran/{pendaftaran}', [PendaftaranDonorController::class, 'batal'])
         ->name('donor.pendaftaran.destroy');
 
@@ -241,5 +265,10 @@ Route::middleware(['auth', 'pendonor'])->group(function () {
         PendonorController::class,
         'profile',
     ])->name('pendonor.profile');
+
+    Route::get('/profil/edit', [PendonorController::class, 'editProfile'])
+        ->name('pendonor.profile.edit');
+    Route::put('/profil', [PendonorController::class, 'updateProfile'])
+        ->name('pendonor.profile.update');
 
 });

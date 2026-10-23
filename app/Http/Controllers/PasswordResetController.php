@@ -24,20 +24,14 @@ class PasswordResetController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        $status = Password::sendResetLink(
+        Password::sendResetLink(
             $request->only('email')
         );
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return back()->with(
-                'status',
-                'Link reset password telah dikirim ke email Anda.'
-            );
-        }
-
-        return back()->withErrors([
-            'email' => __($status),
-        ]);
+        return back()->with(
+            'status',
+            'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirim. Periksa kotak masuk dan folder spam.'
+        );
     }
 
     /**
@@ -80,7 +74,7 @@ class PasswordResetController extends Controller
                 ->route('login')
                 ->with(
                     'success',
-                    'Password berhasil diubah. Silakan login kembali.'
+                    'Kata sandi berhasil diubah. Silakan masuk kembali.'
                 );
         }
 

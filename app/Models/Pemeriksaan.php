@@ -18,6 +18,7 @@ class Pemeriksaan extends Model
         'screened_by',
         'tanggal_pemeriksaan',
         'berat_badan',
+        'tinggi_badan',
         'tekanan_darah',
         'hemoglobin',
         'hasil',
@@ -26,6 +27,7 @@ class Pemeriksaan extends Model
     protected $casts = [
         'tanggal_pemeriksaan' => 'date',
         'berat_badan' => 'integer',
+        'tinggi_badan' => 'decimal:1',
         'hemoglobin' => 'decimal:1',
     ];
 

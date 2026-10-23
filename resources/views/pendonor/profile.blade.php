@@ -177,6 +177,16 @@
                             </div>
                         </div>
 
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" for="tinggi_badan">Tinggi Badan (opsional)</label>
+                            <div class="input-group">
+                                <input id="tinggi_badan" type="number" step="0.1" min="50" max="250" name="tinggi_badan"
+                                    class="form-control @error('tinggi_badan') is-invalid @enderror" value="{{ old('tinggi_badan') }}" placeholder="Contoh: 165">
+                                <span class="input-group-text">cm</span>
+                            </div>
+                            @error('tinggi_badan')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+
                         <button
                             type="submit"
                             class="btn btn-danger w-100 py-3 rounded-3 fw-semibold"

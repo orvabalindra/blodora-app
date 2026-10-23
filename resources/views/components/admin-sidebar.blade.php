@@ -1,8 +1,10 @@
-<aside class="admin-sidebar">
+<aside class="admin-sidebar" id="app-sidebar">
 
     {{-- BRAND --}}
     <div class="admin-sidebar-brand">
-        <img src="{{ asset('images/Blodora2.png') }}" alt="Blodora" class="admin-sidebar-logo">
+        <button class="sidebar-brand-toggle" type="button" aria-label="Tutup sidebar" aria-expanded="true">
+            <img src="{{ asset('images/Blodora2.png') }}" alt="Blodora" class="admin-sidebar-logo">
+        </button>
     </div>
 
 
@@ -10,7 +12,7 @@
     <nav class="admin-sidebar-menu">
 
         <div class="admin-menu-title">
-            MENU UTAMA
+            <span class="sidebar-menu-label">MENU UTAMA</span>
         </div>
 
         {{-- DASHBOARD --}}
@@ -67,6 +69,18 @@
             <span>Permintaan Darah</span>
         </a>
 
+        <a href="{{ route('admin.permintaan-notifikasi.index') }}"
+            class="admin-menu-item {{ request()->routeIs('admin.permintaan-notifikasi.*') ? 'active' : '' }}">
+            <span class="admin-menu-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
+            <span>Notifikasi @php($unreadPermintaanNotifications = Auth::user()->unreadNotifications()->where('type', \App\Notifications\PermintaanDarahStatusNotification::class)->count()) @if ($unreadPermintaanNotifications > 0)<small class="admin-notification-count">{{ $unreadPermintaanNotifications }}</small>@endif</span>
+        </a>
+
+        <a href="{{ route('laporan.bulanan') }}"
+            class="admin-menu-item {{ request()->routeIs('laporan.bulanan') ? 'active' : '' }}">
+            <span class="admin-menu-icon"><i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i></span>
+            <span>Laporan Bulanan</span>
+        </a>
+
         {{-- DATA FASKES --}}
         <a href="{{ route('rumah-sakit.index') }}"
             class="admin-menu-item {{ request()->routeIs('rumah-sakit.*') ? 'active' : '' }}">
@@ -117,7 +131,7 @@
 
             <button type="submit" class="admin-logout-btn">
                 <span>↪</span>
-                <span>Logout</span>
+                <span>Keluar</span>
             </button>
 
         </form>
@@ -125,3 +139,4 @@
     </div>
 
 </aside>
+<button class="sidebar-mobile-backdrop" type="button" data-sidebar-close aria-label="Tutup menu"></button>

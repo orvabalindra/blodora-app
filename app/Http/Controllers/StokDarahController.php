@@ -6,17 +6,35 @@ use App\Models\Pendonor;
 use App\Models\StokDarah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class StokDarahController extends Controller
 {
     /**
      * Menampilkan daftar stok darah.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
         $stokDarah = StokDarah::with(['pendonor', 'penyalurans'])
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $search = trim((string) $request->query('q'));
+
+                $query->where(function ($query) use ($search): void {
+                    $query->where('golongan_darah', strtoupper($search))
+                        ->orWhere('rhesus', $search)
+                        ->orWhere('lokasi', 'like', "{$search}%")
+                        ->orWhereHas('pendonor', function ($pendonorQuery) use ($search): void {
+                            $pendonorQuery->where('nama_lengkap', 'like', "{$search}%");
+                        });
+                });
+            })
             ->latest('id_stok_darah')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('stok-darah.index', compact('stokDarah'));
     }
@@ -36,10 +54,13 @@ class StokDarahController extends Controller
      */
     public function store(Request $request)
     {
+        $this->mergeDateParts($request);
         $validated = $request->validate([
             'pendonor_id' => [
                 'required',
-                'exists:pendonors,id',
+                Rule::exists('pendonors', 'id')
+                    ->where('golongan_darah', $request->input('golongan_darah'))
+                    ->where('rhesus', $request->input('rhesus')),
             ],
 
             'golongan_darah' => [
@@ -68,6 +89,8 @@ class StokDarahController extends Controller
                 'date',
                 'after_or_equal:tanggal_masuk',
             ],
+
+            'lokasi' => ['required', 'string', 'max:255'],
         ]);
 
         StokDarah::create($validated);
@@ -115,10 +138,13 @@ class StokDarahController extends Controller
      */
     public function update(Request $request, StokDarah $stokDarah)
     {
+        $this->mergeDateParts($request);
         $validated = $request->validate([
             'pendonor_id' => [
                 'required',
-                'exists:pendonors,id',
+                Rule::exists('pendonors', 'id')
+                    ->where('golongan_darah', $request->input('golongan_darah'))
+                    ->where('rhesus', $request->input('rhesus')),
             ],
 
             'golongan_darah' => [
@@ -147,6 +173,8 @@ class StokDarahController extends Controller
                 'date',
                 'after_or_equal:tanggal_masuk',
             ],
+
+            'lokasi' => ['required', 'string', 'max:255'],
         ]);
 
         $updated = DB::transaction(function () use ($stokDarah, $validated): bool {

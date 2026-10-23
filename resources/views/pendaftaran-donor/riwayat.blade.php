@@ -37,7 +37,7 @@
                 <div>
                     <span class="donor-section-label">RIWAYAT PENDAFTARAN</span>
                     <h3>Daftar pendaftaran donor</h3>
-                    <p>Pantau status pendaftaran dan batalkan selama masih menunggu screening.</p>
+                <p>Ikuti tahapan pendaftaran sampai donor selesai. Petugas akan memperbarui status setelah screening dan kegiatan.</p>
                 </div>
                 <a href="{{ route('donor.jadwal') }}" class="donor-btn-primary">Lihat Jadwal</a>
             </div>
@@ -64,16 +64,41 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="donor-stat-tag">
-                                        {{ str_replace('_', ' ', ucfirst($pendaftaran->status)) }}
-                                    </span>
+                                    @php
+                                        $jadwalDonor = $pendaftaran->jadwalDonor;
+                                        $waktuMulaiScreening = $jadwalDonor?->tanggal?->copy()->setTimeFromTimeString($jadwalDonor->waktu_mulai);
+                                        $screeningDimulai = $waktuMulaiScreening && now()->greaterThanOrEqualTo($waktuMulaiScreening);
+                                        $labelStatus = $pendaftaran->persetujuan_admin === 'menunggu'
+                                            ? 'Menunggu persetujuan admin'
+                                            : ($pendaftaran->persetujuan_admin === 'ditolak' ? 'Pengajuan ditolak' : ([
+                                            'menunggu_screening' => $screeningDimulai ? 'Proses screening' : 'Terdaftar',
+                                            'ditunda' => 'Screening ditunda',
+                                            'proses_donor' => 'Lolos screening',
+                                            'selesai' => 'Donor selesai',
+                                            'gagal_screening' => 'Belum layak donor',
+                                            'tidak_hadir' => 'Tidak hadir',
+                                            'dibatalkan' => 'Dibatalkan',
+                                        ][$pendaftaran->status] ?? ucwords(str_replace('_', ' ', $pendaftaran->status))));
+                                    @endphp
+                                    <span class="donor-stat-tag">{{ $labelStatus }}</span>
+                                    @if ($pendaftaran->persetujuan_admin === 'menunggu')
+                                        <div class="small text-muted mt-1">Pengajuan sudah dikirim dan sedang menunggu keputusan admin.</div>
+                                    @elseif ($pendaftaran->persetujuan_admin === 'ditolak')
+                                        <div class="small text-muted mt-1">Alasan admin: {{ $pendaftaran->catatan_admin }}</div>
+                                    @elseif ($pendaftaran->status === 'selesai')
+                                        <div class="small text-success mt-1">Donor tercatat. Kantong darah sudah ditambahkan ke stok.</div>
+                                    @elseif ($pendaftaran->status === 'proses_donor')
+                                        <div class="small text-muted mt-1">Datang sesuai jadwal untuk menyelesaikan donor.</div>
+                                    @elseif ($pendaftaran->status === 'menunggu_screening')
+                                        <div class="small text-muted mt-1">{{ $screeningDimulai ? 'Petugas sedang memproses screening.' : 'Anda terdaftar. Screening dilakukan saat jadwal donor dimulai.' }}</div>
+                                    @endif
                                 </td>
                                 <td class="text-end">
-                                    @if ($pendaftaran->status === 'menunggu_screening')
+                                    @if (in_array($pendaftaran->persetujuan_admin, ['menunggu', 'disetujui'], true) && $pendaftaran->status === 'menunggu_screening' && ! $screeningDimulai)
                                         <form method="POST" action="{{ route('donor.pendaftaran.destroy', $pendaftaran) }}" onsubmit="return confirm('Batalkan pendaftaran ini?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="donor-btn-secondary" type="submit">Batalkan</button>
+                                            <button class="donor-btn-secondary" type="submit">Batalkan pengajuan</button>
                                         </form>
                                     @else
                                         <span class="text-muted">—</span>

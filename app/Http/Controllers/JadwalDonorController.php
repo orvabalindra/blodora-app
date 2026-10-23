@@ -13,6 +13,7 @@ class JadwalDonorController extends Controller
     {
         $jadwalDonors = JadwalDonor::withCount([
             'pendaftarans as pendaftar_aktif_count' => fn ($query) => $query
+                ->where('persetujuan_admin', '!=', 'ditolak')
                 ->whereNotIn('status', ['gagal_screening', 'dibatalkan', 'tidak_hadir']),
         ])->orderBy('tanggal')->orderBy('waktu_mulai')->paginate(15);
 
@@ -26,6 +27,8 @@ class JadwalDonorController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->mergeDateParts($request);
+
         $validated = $request->validate([
             'nama_kegiatan' => ['required', 'string', 'max:255'],
             'lokasi' => ['required', 'string', 'max:255'],
@@ -48,6 +51,8 @@ class JadwalDonorController extends Controller
 
     public function update(Request $request, JadwalDonor $jadwalDonor): RedirectResponse
     {
+        $this->mergeDateParts($request);
+
         $validated = $request->validate([
             'nama_kegiatan' => ['required', 'string', 'max:255'],
             'lokasi' => ['required', 'string', 'max:255'],
@@ -58,6 +63,7 @@ class JadwalDonorController extends Controller
         ]);
 
         $pendaftarAktif = $jadwalDonor->pendaftarans()
+            ->where('persetujuan_admin', '!=', 'ditolak')
             ->whereNotIn('status', ['gagal_screening', 'dibatalkan', 'tidak_hadir'])
             ->count();
 
@@ -72,4 +78,5 @@ class JadwalDonorController extends Controller
         return redirect()->route('jadwal-donor.index')
             ->with('success', 'Jadwal donor berhasil diperbarui.');
     }
+
 }

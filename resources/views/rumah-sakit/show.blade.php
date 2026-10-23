@@ -71,9 +71,6 @@
                         {{ $rumahSakit->nama_rs }}
                     </h3>
 
-                    <p>
-                        ID Faskes #{{ $rumahSakit->id_rs }}
-                    </p>
 
                 </div>
 
@@ -84,7 +81,7 @@
                         href="{{ route('rumah-sakit.edit', $rumahSakit) }}"
                         class="admin-btn-primary"
                     >
-                        Edit
+                        Ubah
                     </a>
 
                     <a
@@ -151,19 +148,6 @@
 
                 </div>
 
-
-                {{-- ID --}}
-                <div class="admin-detail-item">
-
-                    <span class="admin-detail-label">
-                        ID Faskes
-                    </span>
-
-                    <strong class="admin-detail-value">
-                        #{{ $rumahSakit->id_rs }}
-                    </strong>
-
-                </div>
 
             </div>
 
@@ -245,7 +229,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

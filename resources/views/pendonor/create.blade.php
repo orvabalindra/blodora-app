@@ -116,6 +116,18 @@
 
                         <div class="col-md-6">
                             <div class="admin-form-group">
+                                <label for="tinggi_badan" class="admin-form-label">Tinggi Badan (opsional)</label>
+                                <div class="admin-input-unit">
+                                    <input id="tinggi_badan" name="tinggi_badan" type="number" step="0.1" min="50" max="250"
+                                        class="admin-form-control @error('tinggi_badan') is-invalid @enderror" value="{{ old('tinggi_badan') }}">
+                                    <span class="admin-input-unit-label">cm</span>
+                                </div>
+                                @error('tinggi_badan')<div class="admin-form-error">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="admin-form-group">
                                 <label for="golongan_darah" class="admin-form-label">Golongan Darah</label>
                                 <select id="golongan_darah" name="golongan_darah" class="admin-form-select" required>
                                     <option value="">Pilih golongan darah</option>
@@ -167,7 +179,7 @@
         </div>
 
         <div class="admin-footer">
-            <span>Blodora Admin Panel</span>
+            <span>Panel Admin Blodora</span>
             <span>Sistem Donor Darah</span>
         </div>
     </main>

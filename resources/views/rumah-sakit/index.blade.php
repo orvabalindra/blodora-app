@@ -93,6 +93,12 @@
 
 
             {{-- SUCCESS MESSAGE --}}
+            @include('components.admin-list-search', [
+                'action' => route('rumah-sakit.index'),
+                'items' => $rumahSakits,
+                'placeholder' => 'Cari nama faskes atau nomor telepon',
+            ])
+
             @if (session('success'))
 
                 <div class="admin-form-alert admin-form-alert-success">
@@ -136,7 +142,7 @@
 
                                 {{-- NO --}}
                                 <td>
-                                    {{ $loop->iteration }}
+                                    {{ $loop->iteration + (($rumahSakits->currentPage() - 1) * $rumahSakits->perPage()) }}
                                 </td>
 
 
@@ -205,7 +211,7 @@
                                         <a
                                             href="{{ route('rumah-sakit.edit', $rumahSakit) }}"
                                             class="admin-action-btn edit"
-                                            title="Edit"
+                                            title="Ubah"
                                         >
                                             <svg
                                                 viewBox="0 0 24 24"
@@ -258,7 +264,7 @@
                                         </div>
 
                                         <strong>
-                                            Belum ada data Faskes.
+                                            {{ request()->filled('q') ? 'Tidak ada faskes yang cocok dengan pencarian.' : 'Belum ada data faskes.' }}
                                         </strong>
 
                                         <span>
@@ -282,11 +288,13 @@
         </div>
 
 
+        <div class="mt-4">{{ $rumahSakits->links() }}</div>
+
         {{-- FOOTER --}}
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

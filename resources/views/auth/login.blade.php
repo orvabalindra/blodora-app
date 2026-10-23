@@ -1,20 +1,20 @@
 @extends('layouts.auth')
 
-@section('title', 'Login - Blodora')
+@section('title', 'Masuk - Blodora')
 
 @section('content')
 
     <div class="auth-topbar">
 
         <a href="/" class="auth-back">
-            ← Back
+            ← Kembali
         </a>
 
         <div class="auth-switch">
             <span>Belum punya akun?</span>
 
             <a href="{{ route('register') }}" class="auth-register-link">
-                Register
+                Daftar
             </a>
         </div>
 
@@ -32,11 +32,11 @@
             >
 
             <h1 class="auth-title">
-                Welcome
+                Selamat Datang
             </h1>
 
             <p class="auth-subtitle">
-                Login to your account
+                Masuk ke akun Anda
             </p>
 
         </div>
@@ -65,7 +65,7 @@
             @csrf
 
 
-            <!-- Username -->
+            <!-- Nama pengguna -->
 
             <div class="auth-field">
 
@@ -73,7 +73,7 @@
                     for="username"
                     class="auth-label"
                 >
-                    Username
+                    Nama pengguna
                 </label>
 
                 <input
@@ -82,7 +82,7 @@
                     name="username"
                     class="auth-input"
                     value="{{ old('username') }}"
-                    placeholder="Enter your username"
+                    placeholder="Masukkan nama pengguna"
                     required
                     autofocus
                 >
@@ -90,7 +90,7 @@
             </div>
 
 
-            <!-- Password -->
+            <!-- Kata sandi -->
 
             <div class="auth-field">
 
@@ -98,7 +98,7 @@
                     for="password"
                     class="auth-label"
                 >
-                    Password
+                    Kata sandi
                 </label>
 
                 <div class="password-wrapper">
@@ -108,7 +108,7 @@
                         id="password"
                         name="password"
                         class="auth-input"
-                        placeholder="Enter your password"
+                        placeholder="Masukkan kata sandi"
                         required
                     >
 
@@ -139,7 +139,7 @@
                     >
 
                     <span>
-                        Remember me
+                        Ingat saya
                     </span>
 
                 </label>
@@ -148,7 +148,7 @@
                     href="{{ route('password.request') }}"
                     class="auth-forgot"
                 >
-                    Forgot password?
+                    Lupa kata sandi?
                 </a>
 
             </div>
@@ -161,37 +161,20 @@
                 class="btn-blodora"
             >
                 <span class="btn-text">
-                    Login
+                    Masuk
                 </span>
 
                 <span class="btn-loading d-none">
                     <span class="auth-spinner"></span>
-                    Logging in...
+                    Sedang masuk...
                 </span>
             </button>
 
         </form>
 
 
-        <div class="auth-divider">
-            OR
-        </div>
-
-
-        <button
-            type="button"
-            class="btn-google"
-        >
-            <span class="google-icon">
-                G
-            </span>
-
-            Continue with Google
-        </button>
-
-
         <div class="auth-footer">
-            Need help?
+            Butuh bantuan?
         </div>
 
     </div>

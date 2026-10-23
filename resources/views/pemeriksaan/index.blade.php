@@ -72,27 +72,22 @@
                     </h3>
 
                     <p>
-                        Daftar pemeriksaan kesehatan seluruh pendonor.
+                        Riwayat pemeriksaan yang tercatat saat petugas melakukan screening pendaftaran.
                     </p>
 
                 </div>
 
 
-                <div class="admin-page-actions">
-
-                    <a
-                        href="{{ route('pemeriksaan.create') }}"
-                        class="admin-btn-primary"
-                    >
-                        + Tambah Pemeriksaan
-                    </a>
-
-                </div>
-
             </div>
 
 
             {{-- SUCCESS MESSAGE --}}
+            @include('components.admin-list-search', [
+                'action' => route('pemeriksaan.index'),
+                'items' => $pemeriksaans,
+                'placeholder' => 'Cari nama pendonor atau hasil pemeriksaan',
+            ])
+
             @if (session('success'))
 
                 <div class="admin-form-alert admin-form-alert-success">
@@ -139,7 +134,7 @@
 
                                 {{-- NO --}}
                                 <td>
-                                    {{ $loop->iteration }}
+                                    {{ $loop->iteration + (($pemeriksaans->currentPage() - 1) * $pemeriksaans->perPage()) }}
                                 </td>
 
 
@@ -241,7 +236,7 @@
                                             <a
                                                 href="{{ route('pemeriksaan.edit', $pemeriksaan) }}"
                                                 class="admin-action-btn edit"
-                                                title="Edit"
+                                                title="Ubah"
                                             >
                                                 <svg viewBox="0 0 24 24" aria-hidden="true">
                                                     <path d="M12 20h9"></path>
@@ -292,11 +287,11 @@
                                         </div>
 
                                         <strong>
-                                            Belum ada data pemeriksaan.
+                                            {{ request()->filled('q') ? 'Tidak ada pemeriksaan yang cocok dengan pencarian.' : 'Belum ada data pemeriksaan.' }}
                                         </strong>
 
                                         <span>
-                                            Data pemeriksaan pendonor akan muncul di sini.
+                                            Hasil screening akan tercatat otomatis setelah petugas memproses pendaftaran donor.
                                         </span>
 
                                     </div>
@@ -316,11 +311,13 @@
         </div>
 
 
+        <div class="mt-4">{{ $pemeriksaans->links() }}</div>
+
         {{-- FOOTER --}}
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

@@ -14,6 +14,7 @@ class StokDarah extends Model
 
     protected $fillable = [
         'pendonor_id',
+        'lokasi',
         'pendaftaran_id',
         'golongan_darah',
         'rhesus',

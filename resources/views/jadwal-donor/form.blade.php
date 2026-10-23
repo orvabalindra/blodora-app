@@ -1,4 +1,5 @@
 @php($isEdit = $jadwalDonor !== null)
+@php($tanggalJadwalForm = old('tanggal', $jadwalDonor?->tanggal?->format('Y-m-d') ?? today()->format('Y-m-d')))
 
 <div class="admin-panel">
     <div class="admin-panel-header">
@@ -43,8 +44,8 @@
             </div>
             <div class="col-md-6">
                 <div class="admin-form-group">
-                    <label for="tanggal" class="admin-form-label">Tanggal kegiatan</label>
-                    <input type="date" id="tanggal" name="tanggal" class="admin-form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', $jadwalDonor?->tanggal?->format('Y-m-d')) }}" required min="{{ today()->format('Y-m-d') }}">
+                    <label class="admin-form-label d-block">Tanggal kegiatan</label>
+                    <x-admin-date-parts name="tanggal" :value="$tanggalJadwalForm" :min-year="now()->year" />
                     @error('tanggal')<div class="admin-form-error">{{ $message }}</div>@enderror
                 </div>
             </div>

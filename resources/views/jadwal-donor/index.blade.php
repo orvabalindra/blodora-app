@@ -11,7 +11,7 @@
             <div>
                 <span class="admin-page-label">KEGIATAN DONOR</span>
                 <h1>Jadwal Donor</h1>
-                <p>Kelola jadwal, lokasi, dan kuota kegiatan donor.</p>
+                <p>Buat jadwal yang jelas agar pendonor dapat memilih kegiatan dan petugas mencatat hasil donor pada jadwal yang sama.</p>
             </div>
             <div class="admin-topbar-right">
                 <div class="admin-date">
@@ -45,12 +45,14 @@
                             <th>Kegiatan</th>
                             <th>Waktu</th>
                             <th>Lokasi</th>
-                            <th>Pendaftar</th>
+                            <th>Kuota</th>
+                            <th>Status</th>
                             <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($jadwalDonors as $jadwalDonor)
+                                    @php($waktuBerakhir = $jadwalDonor->tanggal->copy()->setTimeFromTimeString($jadwalDonor->waktu_selesai))
                             <tr>
                                 <td><strong>{{ $jadwalDonor->nama_kegiatan }}</strong></td>
                                 <td>
@@ -58,14 +60,26 @@
                                     {{ substr($jadwalDonor->waktu_mulai, 0, 5) }}–{{ substr($jadwalDonor->waktu_selesai, 0, 5) }}
                                 </td>
                                 <td>{{ $jadwalDonor->lokasi }}</td>
-                                <td>{{ $jadwalDonor->pendaftar_aktif_count }} / {{ $jadwalDonor->kuota }}</td>
+                                <td>
+                                    {{ $jadwalDonor->pendaftar_aktif_count }} / {{ $jadwalDonor->kuota }} terisi<br>
+                                    <small class="text-muted">{{ max(0, $jadwalDonor->kuota - $jadwalDonor->pendaftar_aktif_count) }} tersedia</small>
+                                </td>
+                                <td>
+                                    @if ($waktuBerakhir->isPast())
+                                        <span class="badge text-bg-secondary">Selesai</span>
+                                    @elseif ($jadwalDonor->pendaftar_aktif_count >= $jadwalDonor->kuota)
+                                        <span class="badge text-bg-warning">Kuota penuh</span>
+                                    @else
+                                        <span class="badge text-bg-success">Pendaftaran dibuka</span>
+                                    @endif
+                                </td>
                                 <td class="text-end">
                                     <a href="{{ route('jadwal-donor.edit', $jadwalDonor) }}" class="admin-btn-secondary">Ubah</a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5">
+                                <td colspan="6">
                                     <div class="admin-empty-state">
                                         <strong>Belum ada jadwal donor</strong>
                                         <span>Buat jadwal donor baru agar pendonor dapat mendaftar.</span>
@@ -80,7 +94,7 @@
         </div>
 
         <div class="admin-footer">
-            <span>Blodora Admin Panel</span>
+            <span>Panel Admin Blodora</span>
             <span>Sistem Donor Darah</span>
         </div>
     </main>

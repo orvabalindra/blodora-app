@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Admin')
+@section('title', 'Dasbor Admin')
 
 @section('content')
 
@@ -31,7 +31,7 @@
                     </span>
 
                     <h1>
-                        Dashboard
+                        Dasbor
                     </h1>
 
                     <p>
@@ -74,6 +74,36 @@
                 </div>
 
             </div>
+
+            @if ($jumlahStokKedaluwarsa > 0 || $stokAkanKedaluwarsa->isNotEmpty() || $stokMenipis->isNotEmpty())
+                <section class="admin-stock-alerts mb-4" aria-label="Peringatan stok darah">
+                    <div class="admin-stock-alerts-heading">
+                        <span class="admin-section-label">PERLU DIPERHATIKAN</span>
+                        <h2>Peringatan stok darah</h2>
+                        <p>Batas stok menipis: 5 kantong per golongan. Stok dengan masa kedaluwarsa 30 hari ke depan ditampilkan di sini.</p>
+                    </div>
+                    <div class="admin-stock-alert-grid">
+                        @if ($jumlahStokKedaluwarsa > 0)
+                            <a class="admin-stock-alert danger" href="{{ route('stok-darah.index') }}">
+                                <strong>{{ $jumlahStokKedaluwarsa }} kantong kedaluwarsa</strong>
+                                <span>Periksa dan keluarkan dari stok tersedia.</span>
+                            </a>
+                        @endif
+                        @foreach ($stokAkanKedaluwarsa as $batch)
+                            <a class="admin-stock-alert warning" href="{{ route('stok-darah.show', $batch->id_stok_darah) }}">
+                                <strong>{{ $batch->golongan_darah }}{{ $batch->rhesus }} · {{ $batch->jumlah_kantong }} kantong</strong>
+                                <span>Kedaluwarsa {{ \Carbon\Carbon::parse($batch->tanggal_kadaluarsa)->translatedFormat('d M Y') }}</span>
+                            </a>
+                        @endforeach
+                        @foreach ($stokMenipis as $item)
+                            <a class="admin-stock-alert {{ $item['jumlah'] === 0 ? 'danger' : 'warning' }}" href="{{ route('stok-darah.index') }}">
+                                <strong>Stok {{ $item['golongan'] }} menipis</strong>
+                                <span>{{ $item['jumlah'] }} kantong tersedia</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
 
 
 
@@ -241,9 +271,18 @@
 
 
 
+            <div class="d-flex justify-content-end mt-3">
+                <a href="{{ route('laporan.bulanan') }}" class="admin-btn-secondary">
+                    <i class="bi bi-file-earmark-bar-graph me-1" aria-hidden="true"></i>
+                    Lihat Laporan Bulanan
+                </a>
+            </div>
+
             {{-- =================================================
             PEMERIKSAAN + DONOR + PERMINTAAN
             ================================================== --}}
+            <details class="admin-dashboard-details mt-3 mb-4">
+                <summary>Ringkasan screening, donor, dan permintaan</summary>
             <div class="row g-4 mt-1">
 
 
@@ -581,6 +620,8 @@
 
 
 
+            </details>
+
             {{-- =================================================
             STOK DARAH
             ================================================== --}}
@@ -631,7 +672,7 @@
 
 
                             {{-- A+ --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -653,7 +694,7 @@
 
 
                             {{-- A- --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -675,7 +716,7 @@
 
 
                             {{-- B+ --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -697,7 +738,7 @@
 
 
                             {{-- B- --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -719,7 +760,7 @@
 
 
                             {{-- AB+ --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -741,7 +782,7 @@
 
 
                             {{-- AB- --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -763,7 +804,7 @@
 
 
                             {{-- O+ --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -785,7 +826,7 @@
 
 
                             {{-- O- --}}
-                            <div class="col-6 col-md-3 col-xl-2">
+                            <div class="col-6 col-md-3 col-xl-3">
 
                                 <div class="admin-blood-card">
 
@@ -818,6 +859,8 @@
             {{-- =================================================
             BAWAH
             ================================================== --}}
+            <details class="admin-dashboard-details mt-4">
+                <summary>Aktivitas dan analisis permintaan</summary>
             <div class="row g-4 mt-1">
 
 
@@ -839,7 +882,7 @@
                                 </h3>
 
                                 <p>
-                                    Lima aktivitas donor terbaru.
+                                    Aktivitas donor dalam 7 hari terakhir.
                                 </p>
 
                             </div>
@@ -1127,6 +1170,8 @@
             </div>
 
 
+
+            </details>
 
             {{-- =================================================
             FOOTER

@@ -81,10 +81,6 @@
                         {{ $pendonor->nama_lengkap }}
                     </h3>
 
-                    <p>
-                        ID Pendonor #{{ $pendonor->id }}
-                    </p>
-
                 </div>
 
 
@@ -95,7 +91,7 @@
                         href="{{ route('pendonor.edit', $pendonor->id) }}"
                         class="admin-btn-primary"
                     >
-                        Edit
+                        Ubah
                     </a>
 
 
@@ -363,7 +359,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

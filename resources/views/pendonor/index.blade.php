@@ -59,10 +59,6 @@
                         {{ strtoupper(substr(Auth::user()->username ?? 'A', 0, 1)) }}
                     </div>
 
-                    <a href="{{ route('pendonor.create') }}" class="btn btn-danger">
-                        Tambah Pendonor
-                    </a>
-
                 </div>
 
             </div>
@@ -88,7 +84,7 @@
                         </h3>
 
                         <p>
-                            Total {{ $pendonors->count() }} pendonor terdaftar.
+                            Total {{ $pendonors->total() }} pendonor terdaftar.
                         </p>
 
                     </div>
@@ -99,6 +95,12 @@
                 {{-- =================================================
                 SUCCESS MESSAGE
                 ================================================== --}}
+                @include('components.admin-list-search', [
+                    'action' => route('pendonor.index'),
+                    'items' => $pendonors,
+                    'placeholder' => 'Cari nama, NIK, atau nomor HP pendonor',
+                ])
+
                 @if(session('success'))
 
                     <div class="alert alert-success border-0 rounded-3 mb-4">
@@ -142,10 +144,6 @@
                                 <tr>
 
                                     <th>
-                                        NO
-                                    </th>
-
-                                    <th>
                                         NIK
                                     </th>
 
@@ -180,15 +178,9 @@
 
                             <tbody>
 
-                                @foreach($pendonors as $index => $pendonor)
+                                @foreach($pendonors as $pendonor)
 
                                                     <tr>
-
-                                                        {{-- NO --}}
-                                                        <td>
-                                                            {{ $index + 1 }}
-                                                        </td>
-
 
                                                         {{-- NIK --}}
                                                         <td>
@@ -261,7 +253,7 @@
 
                                                                 {{-- EDIT --}}
                                                                 <a href="{{ route('pendonor.edit', $pendonor->id) }}" class="admin-action-btn edit"
-                                                                    title="Edit">
+                                                                    title="Ubah">
                                                                     ✎
                                                                 </a>
 
@@ -312,7 +304,7 @@
                         </div>
 
                         <strong>
-                            Belum ada data pendonor
+                            {{ request()->filled('q') ? 'Tidak ada pendonor yang cocok dengan pencarian.' : 'Belum ada data pendonor.' }}
                         </strong>
 
                         <span>
@@ -329,10 +321,12 @@
             {{-- =================================================
             FOOTER
             ================================================== --}}
+            <div class="mt-4">{{ $pendonors->links() }}</div>
+
             <div class="admin-footer">
 
                 <span>
-                    Blodora Admin Panel
+                    Panel Admin Blodora
                 </span>
 
                 <span>

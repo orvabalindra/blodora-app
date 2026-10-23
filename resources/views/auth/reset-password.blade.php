@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Reset Password - Blodora')
+@section('title', 'Atur Ulang Kata Sandi - Blodora')
 
 @section('content')
 
@@ -10,7 +10,7 @@
             href="{{ route('login') }}"
             class="auth-back"
         >
-            ← Back
+            ← Kembali
         </a>
 
     </div>
@@ -27,11 +27,11 @@
             >
 
             <h1 class="auth-title">
-                Reset Password
+                Atur Ulang Kata Sandi
             </h1>
 
             <p class="auth-subtitle">
-                Create a new password for your account
+                Buat kata sandi baru untuk akun Anda
             </p>
 
         </div>
@@ -62,7 +62,7 @@
             >
 
 
-            <!-- Email -->
+            <!-- Alamat email -->
 
             <div class="auth-field">
 
@@ -70,7 +70,7 @@
                     for="email"
                     class="auth-label"
                 >
-                    Email
+                    Alamat email
                 </label>
 
                 <input
@@ -79,14 +79,14 @@
                     name="email"
                     class="auth-input"
                     value="{{ old('email', $email) }}"
-                    placeholder="Enter your email"
+                    placeholder="Masukkan alamat email"
                     required
                 >
 
             </div>
 
 
-            <!-- New Password -->
+            <!-- New Kata sandi -->
 
             <div class="auth-field">
 
@@ -94,7 +94,7 @@
                     for="password"
                     class="auth-label"
                 >
-                    New Password
+                    Kata sandi baru
                 </label>
 
                 <div class="password-wrapper">
@@ -104,7 +104,7 @@
                         id="password"
                         name="password"
                         class="auth-input"
-                        placeholder="Enter your new password"
+                    placeholder="Masukkan kata sandi baru"
                         required
                     >
 
@@ -122,7 +122,7 @@
             </div>
 
 
-            <!-- Confirm Password -->
+            <!-- Confirm Kata sandi -->
 
             <div class="auth-field">
 
@@ -130,7 +130,7 @@
                     for="password_confirmation"
                     class="auth-label"
                 >
-                    Confirm New Password
+                    Konfirmasi kata sandi baru
                 </label>
 
                 <div class="password-wrapper">
@@ -140,7 +140,7 @@
                         id="password_confirmation"
                         name="password_confirmation"
                         class="auth-input"
-                        placeholder="Confirm your new password"
+                        placeholder="Masukkan kembali kata sandi baru"
                         required
                     >
 
@@ -166,12 +166,12 @@
             >
 
                 <span class="btn-text">
-                    Reset Password
+                    Atur Ulang Kata Sandi
                 </span>
 
                 <span class="btn-loading d-none">
                     <span class="auth-spinner"></span>
-                    Updating password...
+                    Memperbarui kata sandi...
                 </span>
 
             </button>
@@ -181,10 +181,10 @@
 
         <div class="auth-footer">
 
-            Remember your password?
+            Ingat kata sandi Anda?
 
             <a href="{{ route('login') }}">
-                Login
+                Masuk
             </a>
 
         </div>

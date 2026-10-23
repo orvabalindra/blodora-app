@@ -10,11 +10,28 @@ html {
 }
 
 body {
-    color: #202832;
+    color: #171717;
 }
 
 a {
     text-decoration: none;
+}
+
+.skip-link {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 10001;
+    padding: 10px 14px;
+    transform: translateY(-160%);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--blodora-red-dark);
+    box-shadow: 0 4px 18px rgb(0 0 0 / 18%);
+}
+
+.skip-link:focus {
+    transform: translateY(0);
 }
 
 
@@ -31,8 +48,18 @@ a {
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: flex;
     align-items: center;
+}
+
+.hero::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: linear-gradient(90deg, rgb(255 255 255 / 94%) 0%, rgb(255 255 255 / 87%) 36%, rgb(255 255 255 / 25%) 70%, transparent 100%);
+    content: "";
 }
 
 
@@ -91,7 +118,7 @@ a {
 
 .blodora-navbar .nav-link {
     position: relative;
-    color: #6b7280;
+    color: #6b6b6b;
     font-size: 14px;
     font-weight: 500;
     padding: 8px 0 !important;
@@ -114,17 +141,7 @@ a {
 .blodora-navbar .nav-link.active {
     color: var(--blodora-red);
     font-weight: 600;
-}
-
-.blodora-navbar .nav-link.active::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -15px;
-    height: 2px;
-    background: var(--blodora-red);
-    border-radius: 10px;
+    border-bottom: 2px solid var(--blodora-red);
 }
 
 
@@ -157,6 +174,23 @@ a {
     transform: translateY(-2px);
 }
 
+.btn-register {
+    margin-left: 10px;
+    padding: 9px 20px;
+    border: 1px solid var(--blodora-red);
+    border-radius: 30px;
+    background: var(--blodora-red);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-register:hover {
+    border-color: var(--blodora-red-dark);
+    background: var(--blodora-red-dark);
+    color: #fff;
+}
+
 .blodora-navbar.scrolled .btn-login {
     background: var(--blodora-red);
     border-color: var(--blodora-red);
@@ -177,6 +211,34 @@ a {
     padding-top: 60px;
 }
 
+[data-hero-motion] > * {
+    animation: hero-enter 650ms cubic-bezier(.2, .75, .25, 1) both;
+}
+
+[data-hero-motion] > :nth-child(2) {
+    animation-delay: 90ms;
+}
+
+[data-hero-motion] > :nth-child(3) {
+    animation-delay: 180ms;
+}
+
+[data-hero-motion] > :nth-child(4) {
+    animation-delay: 270ms;
+}
+
+@keyframes hero-enter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 
 /*
 |--------------------------------------------------------------------------
@@ -187,7 +249,7 @@ a {
 .hero-subtitle {
     display: block;
     margin-bottom: 18px;
-    color: #7b8491;
+    color: #777777;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 4px;
@@ -202,7 +264,7 @@ a {
 
 .hero-title {
     margin: 0;
-    color: #202832;
+    color: #171717;
     font-size: 54px;
     line-height: 1.05;
     font-weight: 800;
@@ -222,7 +284,7 @@ a {
 .hero-description {
     max-width: 380px;
     margin-top: 25px;
-    color: #737b87;
+    color: #777777;
     font-size: 16px;
     line-height: 1.6;
 }
@@ -273,7 +335,7 @@ a {
 .donor-section,
 .stock-section,
 .about-section {
-    padding: 110px 0;
+    padding: 88px 0;
 }
 
 
@@ -320,7 +382,7 @@ a {
 .section-heading h2,
 .about-content h2 {
     margin-bottom: 20px;
-    color: #202832;
+    color: #171717;
     font-size: 42px;
     font-weight: 800;
 }
@@ -341,7 +403,7 @@ a {
 .section-content > p {
     max-width: 650px;
     margin: 0 auto 50px;
-    color: #737b87;
+    color: #777777;
     font-size: 16px;
     line-height: 1.7;
 }
@@ -376,9 +438,18 @@ a {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
+.info-card[data-reveal]:hover {
+    transform: translateY(-7px);
+}
+
 .card-icon {
     margin-bottom: 15px;
     font-size: 30px;
+    color: var(--blodora-red);
+}
+
+.btn-donor .bi {
+    font-size: 18px;
 }
 
 .info-card h3 {
@@ -388,7 +459,7 @@ a {
 
 .info-card p {
     margin: 0;
-    color: #737b87;
+    color: #777777;
     font-size: 14px;
     line-height: 1.6;
 }
@@ -405,7 +476,7 @@ a {
 */
 
 .stock-section {
-    background: #f7f8fa;
+    background: #f7f7f7;
 }
 
 .section-heading {
@@ -414,7 +485,7 @@ a {
 }
 
 .section-heading p {
-    color: #737b87;
+    color: #777777;
     font-size: 16px;
 }
 
@@ -441,6 +512,39 @@ a {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
+.blood-card[data-reveal]:hover {
+    transform: translateY(-7px);
+}
+
+.motion-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 550ms ease, transform 550ms cubic-bezier(.2, .75, .25, 1);
+}
+
+.motion-ready [data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.donor-cards [data-reveal]:nth-child(2),
+.stock-grid [data-reveal]:nth-child(2) {
+    transition-delay: 90ms;
+}
+
+.donor-cards [data-reveal]:nth-child(3),
+.stock-grid [data-reveal]:nth-child(3) {
+    transition-delay: 160ms;
+}
+
+.stock-grid [data-reveal]:nth-child(4) {
+    transition-delay: 220ms;
+}
+
+.stock-grid [data-reveal]:nth-child(n + 5) {
+    transition-delay: 80ms;
+}
+
 .blood-type {
     display: flex;
     align-items: center;
@@ -462,7 +566,7 @@ a {
 
 .blood-card p {
     margin: 0;
-    color: #737b87;
+    color: #777777;
     font-size: 14px;
 }
 
@@ -479,7 +583,7 @@ a {
 }
 
 .stock-status.is-empty {
-    color: #737b87;
+    color: #777777;
 }
 
 .stock-status-dot {
@@ -487,6 +591,55 @@ a {
     height: 8px;
     border-radius: 50%;
     background: currentColor;
+}
+
+.stock-location-list {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0 0;
+    padding: 14px 0 0;
+    border-top: 1px solid #eeeeee;
+    list-style: none;
+    text-align: left;
+}
+
+.stock-location-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #666666;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.stock-location-list li span {
+    overflow-wrap: anywhere;
+}
+
+.stock-location-list li strong {
+    flex: 0 0 auto;
+    color: #222222;
+}
+
+.stock-updated-at {
+    margin: 20px 0 0;
+    color: #666666;
+    font-size: 13px;
+    text-align: center;
+}
+
+.stock-disclaimer {
+    max-width: 720px;
+    margin: 8px auto 0;
+    color: #666666;
+    font-size: 12px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+:where(a, button, [tabindex]):focus-visible {
+    outline: 3px solid #7f1d1d;
+    outline-offset: 3px;
 }
 
 
@@ -498,6 +651,7 @@ a {
 
 .about-section {
     background: white;
+    padding: 112px 0;
 }
 
 .about-content {
@@ -508,10 +662,15 @@ a {
 }
 
 .about-content p {
-    color: #737b87;
-    font-size: 16px;
-    line-height: 1.8;
-    margin-bottom: 20px;
+    color: #777777;
+    font-size: 18px;
+    line-height: 1.85;
+    margin-bottom: 24px;
+}
+
+.about-content h2 {
+    font-size: clamp(2.75rem, 5vw, 3.5rem);
+    line-height: 1.2;
 }
 
 
@@ -523,7 +682,7 @@ a {
 
 .blodora-footer {
     padding: 50px 0 25px;
-    background: #202832;
+    background: #171717;
     color: white;
 }
 
@@ -540,7 +699,7 @@ a {
 
 .footer-content p {
     margin: 0;
-    color: #b7bec8;
+    color: #b8b8b8;
     font-size: 14px;
 }
 
@@ -548,7 +707,7 @@ a {
     padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
-    color: #8e97a3;
+    color: #888888;
     font-size: 13px;
 }
 
@@ -582,13 +741,15 @@ a {
         padding: 10px 0 !important;
     }
 
-    .blodora-navbar .nav-link.active::after {
-        display: none;
-    }
-
     .btn-login {
         margin-top: 10px;
         display: inline-block;
+        text-align: center;
+    }
+
+    .btn-register {
+        margin: 10px 0 0 8px;
+        min-width: 96px;
         text-align: center;
     }
 
@@ -612,6 +773,24 @@ a {
     .about-content {
         grid-template-columns: 1fr;
         gap: 30px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        opacity: 1 !important;
+        transform: none !important;
     }
 }
 
@@ -643,6 +822,10 @@ a {
         padding-top: 100px;
     }
 
+    .hero::before {
+        background: linear-gradient(90deg, rgb(255 255 255 / 97%) 0%, rgb(255 255 255 / 92%) 70%, rgb(255 255 255 / 72%) 100%);
+    }
+
     .stock-grid {
         grid-template-columns: 1fr;
     }
@@ -653,9 +836,98 @@ a {
         padding: 80px 20px;
     }
 
+    .about-content p { font-size: 16px; }
+
     .section-content h2,
     .section-heading h2,
     .about-content h2 {
         font-size: 32px;
     }
+}
+
+/* Readable defaults and comfortable controls across ages and devices. */
+body {
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    line-height: 1.12;
+}
+
+.hero-description,
+.section-content > p,
+.section-heading p,
+.about-content p {
+    color: #595959;
+    font-size: 17px;
+    line-height: 1.75;
+}
+
+.hero-subtitle,
+.section-label {
+    font-size: 14px;
+    letter-spacing: .1em;
+    line-height: 1.5;
+}
+
+.info-card p,
+.blood-card p,
+.stock-status,
+.stock-location-list li,
+.stock-updated-at,
+.stock-disclaimer {
+    color: #595959;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.stock-status.is-available { color: #176b40; }
+.stock-status.is-empty { color: #595959; }
+
+.btn-donor,
+.btn-login,
+.btn-register,
+.blodora-navbar .navbar-toggler {
+    min-height: 48px;
+}
+
+.btn-donor {
+    justify-content: center;
+    padding: 12px 22px;
+    font-size: 16px;
+}
+
+.blodora-navbar .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.blodora-navbar .navbar-toggler { min-width: 48px; }
+
+.hero {
+    min-height: max(100vh, 620px);
+    min-height: max(100svh, 620px);
+}
+
+@media (max-width: 576px) {
+    .hero-title { font-size: clamp(2.35rem, 10vw, 3rem); }
+
+    .hero-description,
+    .section-content > p,
+    .section-heading p,
+    .about-content p { font-size: 16px; }
+
+    .donor-section,
+    .stock-section,
+    .about-section { padding: 72px 16px; }
+
+    .stock-location-list li { align-items: flex-start; }
+    .stock-location-list li strong { white-space: nowrap; }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+    .hero { min-height: 620px; }
 }

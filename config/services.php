@@ -2,6 +2,11 @@
 
 return [
 
+    'blodora' => [
+        'admin_password' => env('BLODORA_ADMIN_PASSWORD'),
+        'donor_password' => env('BLODORA_DONOR_PASSWORD'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

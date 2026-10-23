@@ -11,12 +11,27 @@ class PemeriksaanController extends Controller
     /**
      * Menampilkan semua data pemeriksaan.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
         $pemeriksaans = Pemeriksaan::with(['pendonor', 'pendaftaran'])
             ->withCount('riwayatDonors')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $search = trim((string) $request->query('q'));
+
+                $query->where(function ($query) use ($search): void {
+                    $query->where('hasil', mb_strtolower($search))
+                        ->orWhereHas('pendonor', function ($pendonorQuery) use ($search): void {
+                            $pendonorQuery->where('nama_lengkap', 'like', "{$search}%");
+                        });
+                });
+            })
             ->latest('id_pemeriksaan')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pemeriksaan.index', compact('pemeriksaans'));
     }
@@ -36,6 +51,7 @@ class PemeriksaanController extends Controller
      */
     public function store(Request $request)
     {
+        $this->mergeDateParts($request);
         $validated = $request->validate([
             'pendonor_id' => [
                 'required',
@@ -45,6 +61,7 @@ class PemeriksaanController extends Controller
             'tanggal_pemeriksaan' => [
                 'required',
                 'date',
+                'before_or_equal:today',
             ],
 
             'berat_badan' => [
@@ -115,6 +132,7 @@ class PemeriksaanController extends Controller
         Request $request,
         Pemeriksaan $pemeriksaan
     ) {
+        $this->mergeDateParts($request);
         if ($pemeriksaan->pendaftaran_id !== null || $pemeriksaan->riwayatDonors()->exists()) {
             return back()->withErrors([
                 'pemeriksaan' => 'Pemeriksaan yang terhubung dengan pendaftaran atau riwayat donor tidak dapat diubah.',
@@ -130,6 +148,7 @@ class PemeriksaanController extends Controller
             'tanggal_pemeriksaan' => [
                 'required',
                 'date',
+                'before_or_equal:today',
             ],
 
             'berat_badan' => [

@@ -128,11 +128,11 @@ class PermintaanDarahWorkflowTest extends TestCase
             ->get(route('permintaan-darah.show', $permintaan))
             ->assertOk()
             ->assertSee('Penyerahan Darah')
-            ->assertSee('Batch #'.$firstToExpire->id_stok_darah);
+            ->assertSee('Stok O+');
         $this->get(route('stok-darah.show', $firstToExpire))
             ->assertOk()
             ->assertSee('Riwayat Penyaluran')
-            ->assertSee('ID Stok #'.$firstToExpire->id_stok_darah);
+            ->assertSee('Detail Stok Darah');
         $this->get(route('rumah-sakit.show', $permintaan->rumahSakit))
             ->assertOk()
             ->assertSee('Permintaan dari Faskes Ini')

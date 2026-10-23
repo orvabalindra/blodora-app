@@ -207,7 +207,6 @@
                                         value="{{ $pemeriksaan->id_pemeriksaan }}"
                                         {{ old('pemeriksaan_id') == $pemeriksaan->id_pemeriksaan ? 'selected' : '' }}
                                     >
-                                        #{{ $pemeriksaan->id_pemeriksaan }}
                                         —
                                         {{ $pemeriksaan->pendonor?->nama_lengkap ?? 'Pendonor tidak ditemukan' }}
                                         —
@@ -243,14 +242,7 @@
                                 Tanggal Donor
                             </label>
 
-                            <input
-                                type="date"
-                                name="tanggal_donor"
-                                id="tanggal_donor"
-                                class="admin-form-control @error('tanggal_donor') is-invalid @enderror"
-                                value="{{ old('tanggal_donor', now()->format('Y-m-d')) }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_donor" :value="old('tanggal_donor', now()->format('Y-m-d'))" />
 
                             @error('tanggal_donor')
 
@@ -390,7 +382,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

@@ -7,6 +7,7 @@ use App\Models\Pemeriksaan;
 use App\Models\Pendaftaran;
 use App\Models\RiwayatDonor;
 use App\Models\StokDarah;
+use App\Notifications\StatusPendaftaranDonorNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,7 @@ class PendaftaranDonorController extends Controller
 
         $jadwalDonors = JadwalDonor::withCount([
             'pendaftarans as pendaftar_aktif_count' => fn (Builder $query) => $query
+                ->where('persetujuan_admin', '!=', 'ditolak')
                 ->whereNotIn('status', ['gagal_screening', 'dibatalkan', 'tidak_hadir']),
         ])->where(function (Builder $query) {
             $query->whereDate('tanggal', '>', today())
@@ -82,6 +84,7 @@ class PendaftaranDonorController extends Controller
             }
 
             $jumlahAktif = $jadwal->pendaftarans()
+                ->where('persetujuan_admin', '!=', 'ditolak')
                 ->whereNotIn('status', ['gagal_screening', 'dibatalkan', 'tidak_hadir'])
                 ->count();
 
@@ -92,6 +95,8 @@ class PendaftaranDonorController extends Controller
             if ($pendaftaran) {
                 $pendaftaran->update([
                     'status' => 'menunggu_screening',
+                    'persetujuan_admin' => 'menunggu',
+                    'catatan_admin' => null,
                     'keterangan_medis' => null,
                 ]);
             } else {
@@ -99,17 +104,28 @@ class PendaftaranDonorController extends Controller
                     'pendonor_id' => $pendonor->id,
                     'jadwal_donor_id' => $jadwal->id,
                     'status' => 'menunggu_screening',
+                    'persetujuan_admin' => 'menunggu',
                 ]);
             }
 
             return 'berhasil';
         });
 
+        if ($hasil === 'berhasil') {
+            $this->notifyDonorStatus(
+                Pendaftaran::where('pendonor_id', $pendonor->id)
+                    ->where('jadwal_donor_id', $jadwalDonor->id)
+                    ->firstOrFail(),
+                'Pengajuan donor terkirim',
+                'Pengajuanmu sudah diterima dan sedang menunggu persetujuan admin.',
+            );
+        }
+
         return match ($hasil) {
             'jadwal_tutup' => back()->withErrors(['jadwal' => 'Jadwal ini sudah lewat.']),
             'sudah_terdaftar' => back()->withErrors(['jadwal' => 'Anda sudah terdaftar pada jadwal ini.']),
             'kuota_penuh' => back()->withErrors(['jadwal' => 'Kuota jadwal sudah penuh.']),
-            default => back()->with('success', 'Pendaftaran berhasil. Menunggu screening petugas.'),
+            default => back()->with('success', 'Pengajuan donor berhasil dikirim dan menunggu persetujuan admin.'),
         };
     }
 
@@ -118,9 +134,19 @@ class PendaftaranDonorController extends Controller
         abort_unless($request->user()->role === 'pendonor', 403);
         abort_unless($pendaftaran->pendonor?->user_id === $request->user()->id, 403);
 
-        if ($pendaftaran->status !== 'menunggu_screening') {
+        if (! in_array($pendaftaran->persetujuan_admin, ['menunggu', 'disetujui'], true)
+            || $pendaftaran->status !== 'menunggu_screening') {
             return back()->withErrors([
                 'pendaftaran' => 'Pendaftaran hanya dapat dibatalkan sebelum screening dimulai.',
+            ]);
+        }
+
+        $jadwal = $pendaftaran->jadwalDonor;
+        $waktuMulai = $jadwal?->tanggal?->copy()->setTimeFromTimeString($jadwal->waktu_mulai);
+
+        if ($waktuMulai && now()->greaterThanOrEqualTo($waktuMulai)) {
+            return back()->withErrors([
+                'pendaftaran' => 'Pendaftaran tidak dapat dibatalkan karena waktu screening sudah dimulai.',
             ]);
         }
 
@@ -141,35 +167,160 @@ class PendaftaranDonorController extends Controller
         return view('pendaftaran-donor.riwayat', compact('pendaftarans', 'pendonor'));
     }
 
-    public function adminIndex(): View
+    public function notifikasi(Request $request): View
     {
-        $pendaftarans = Pendaftaran::with(['pendonor', 'jadwalDonor', 'pemeriksaans'])
-            ->latest()->paginate(20);
+        abort_unless($request->user()->role === 'pendonor', 403);
 
-        return view('pendaftaran-donor.admin-index', compact('pendaftarans'));
+        $notifications = $request->user()->notifications()->latest()->paginate(20);
+        $unreadCount = $request->user()->unreadNotifications()->count();
+
+        return view('pendaftaran-donor.notifikasi', compact('notifications', 'unreadCount'));
+    }
+
+    public function bacaNotifikasi(Request $request, string $id): RedirectResponse
+    {
+        abort_unless($request->user()->role === 'pendonor', 403);
+
+        $notification = $request->user()->notifications()->whereKey($id)->firstOrFail();
+        $notification->markAsRead();
+
+        return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
+    }
+
+    public function bacaSemuaNotifikasi(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->role === 'pendonor', 403);
+
+        $request->user()->unreadNotifications()->update([
+            'read_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
+    }
+
+    public function hapusSemuaNotifikasi(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->role === 'pendonor', 403);
+
+        $request->user()->notifications()->delete();
+
+        return back()->with('success', 'Semua notifikasi berhasil dihapus.');
+    }
+
+    public function adminIndex(Request $request): View
+    {
+        $validated = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', Rule::in([
+                'menunggu_screening', 'ditunda', 'proses_donor', 'selesai',
+                'gagal_screening', 'tidak_hadir', 'dibatalkan',
+            ])],
+        ]);
+
+        $pendaftarans = Pendaftaran::with(['pendonor', 'jadwalDonor', 'pemeriksaans'])
+            ->when($request->filled('q'), function (Builder $query) use ($validated): void {
+                $search = trim($validated['q']);
+
+                $query->where(function (Builder $query) use ($search): void {
+                    $query->whereHas('pendonor', fn (Builder $pendonor) => $pendonor
+                        ->where('nama_lengkap', 'like', "%{$search}%"))
+                        ->orWhereHas('jadwalDonor', fn (Builder $jadwal) => $jadwal
+                            ->where('nama_kegiatan', 'like', "%{$search}%")
+                            ->orWhere('lokasi', 'like', "%{$search}%"))
+                        ->orWhere('status', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $validated['status']))
+            ->latest()->paginate(12)->withQueryString();
+
+        return view('pendaftaran-donor.admin-index', [
+            'pendaftarans' => $pendaftarans,
+            'q' => $validated['q'] ?? '',
+            'status' => $validated['status'] ?? '',
+        ]);
+    }
+
+    public function persetujuan(Request $request, Pendaftaran $pendaftaran): RedirectResponse
+    {
+        $validated = $request->validate([
+            'keputusan' => ['required', Rule::in(['setujui', 'tolak'])],
+            'catatan_admin' => ['required_if:keputusan,tolak', 'nullable', 'string', 'max:2000'],
+        ]);
+
+        $berhasil = DB::transaction(function () use ($validated, $pendaftaran): bool {
+            $lockedPendaftaran = Pendaftaran::query()
+                ->lockForUpdate()
+                ->findOrFail($pendaftaran->getKey());
+
+            if ($lockedPendaftaran->persetujuan_admin !== 'menunggu'
+                || $lockedPendaftaran->status !== 'menunggu_screening') {
+                return false;
+            }
+
+            $ditolak = $validated['keputusan'] === 'tolak';
+            $lockedPendaftaran->update([
+                'persetujuan_admin' => $ditolak ? 'ditolak' : 'disetujui',
+                'catatan_admin' => $ditolak ? $validated['catatan_admin'] : null,
+            ]);
+
+            return true;
+        });
+
+        if (! $berhasil) {
+            return back()->withErrors(['persetujuan' => 'Pendaftaran ini sudah diproses. Muat ulang halaman sebelum mencoba lagi.']);
+        }
+
+        $this->notifyDonorStatus(
+            $pendaftaran,
+            $validated['keputusan'] === 'setujui' ? 'Pengajuan donor disetujui' : 'Pengajuan donor ditolak',
+            $validated['keputusan'] === 'setujui'
+                ? 'Admin menyetujui pengajuanmu. Datang sesuai jadwal untuk mengikuti screening.'
+                : 'Admin menolak pengajuanmu. Alasan: '.$validated['catatan_admin'],
+        );
+
+        return back()->with('success', $validated['keputusan'] === 'setujui'
+            ? 'Pendaftaran donor disetujui. Pendonor dapat mengikuti screening pada jadwal kegiatan.'
+            : 'Pendaftaran donor ditolak. Pendonor dapat melihat catatan keputusan ini.');
     }
 
     public function screening(Request $request, Pendaftaran $pendaftaran): RedirectResponse
     {
-        if (! in_array($pendaftaran->status, ['menunggu_screening', 'ditunda'], true)) {
+        $this->mergeDateParts($request);
+        if ($pendaftaran->persetujuan_admin !== 'disetujui'
+            || ! in_array($pendaftaran->status, ['menunggu_screening', 'ditunda'], true)) {
             return back()->withErrors(['screening' => 'Pendaftaran ini tidak lagi menunggu keputusan screening.']);
+        }
+
+        $jadwal = $pendaftaran->jadwalDonor;
+        $waktuMulai = $jadwal?->tanggal?->copy()->setTimeFromTimeString($jadwal->waktu_mulai);
+
+        if (! $waktuMulai || now()->lessThan($waktuMulai)) {
+            return back()->withErrors(['screening' => 'Screening baru dapat dimulai saat jadwal donor berlangsung.']);
         }
 
         $validated = $request->validate([
             'keputusan' => ['required', Rule::in(['layak', 'tidak_layak', 'ditunda'])],
-            'tanggal_pemeriksaan' => ['required_unless:keputusan,ditunda', 'nullable', 'date'],
-            'berat_badan' => ['required_unless:keputusan,ditunda', 'nullable', 'integer', 'min:1'],
+            'tanggal_pemeriksaan' => ['required_unless:keputusan,ditunda', 'nullable', 'date', 'before_or_equal:today'],
             'tekanan_darah' => ['required_unless:keputusan,ditunda', 'nullable', 'string', 'max:20'],
             'hemoglobin' => ['required_unless:keputusan,ditunda', 'nullable', 'numeric', 'between:0,30'],
             'catatan' => ['required_if:keputusan,ditunda,tidak_layak', 'nullable', 'string', 'max:2000'],
         ]);
 
-        $berhasil = DB::transaction(function () use ($validated, $pendaftaran, $request) {
+        $beratBadanProfil = $pendaftaran->pendonor?->berat_badan;
+        $tinggiBadanProfil = $pendaftaran->pendonor?->tinggi_badan;
+
+        if ($validated['keputusan'] !== 'ditunda' && ! $beratBadanProfil) {
+            return back()->withErrors(['screening' => 'Berat badan belum tersedia di profil pendonor. Lengkapi profil sebelum screening.']);
+        }
+
+        $berhasil = DB::transaction(function () use ($validated, $pendaftaran, $request, $beratBadanProfil, $tinggiBadanProfil) {
             $lockedPendaftaran = Pendaftaran::query()
                 ->lockForUpdate()
                 ->findOrFail($pendaftaran->getKey());
 
-            if (! in_array($lockedPendaftaran->status, ['menunggu_screening', 'ditunda'], true)) {
+            if ($lockedPendaftaran->persetujuan_admin !== 'disetujui'
+                || ! in_array($lockedPendaftaran->status, ['menunggu_screening', 'ditunda'], true)) {
                 return false;
             }
 
@@ -179,7 +330,8 @@ class PendaftaranDonorController extends Controller
                     'pendaftaran_id' => $lockedPendaftaran->id,
                     'screened_by' => $request->user()->id,
                     'tanggal_pemeriksaan' => $validated['tanggal_pemeriksaan'],
-                    'berat_badan' => $validated['berat_badan'],
+                    'berat_badan' => $beratBadanProfil,
+                    'tinggi_badan' => $tinggiBadanProfil,
                     'tekanan_darah' => $validated['tekanan_darah'],
                     'hemoglobin' => $validated['hemoglobin'],
                     'hasil' => $validated['keputusan'] === 'layak' ? 'layak' : 'tidak layak',
@@ -204,11 +356,20 @@ class PendaftaranDonorController extends Controller
             return back()->withErrors(['screening' => 'Status pendaftaran sudah berubah. Muat ulang halaman sebelum mencoba lagi.']);
         }
 
+        [$judulNotifikasi, $pesanNotifikasi] = match ($validated['keputusan']) {
+            'layak' => ['Screening donor: layak', 'Kamu dinyatakan layak untuk melanjutkan donor pada jadwal ini.'],
+            'tidak_layak' => ['Hasil screening donor', 'Kamu belum dapat melanjutkan donor. Silakan lihat informasi pendaftaran atau hubungi petugas.'],
+            default => ['Screening donor ditunda', 'Petugas menunda screening dan akan mengevaluasi kembali pengajuanmu.'],
+        };
+        $this->notifyDonorStatus($pendaftaran, $judulNotifikasi, $pesanNotifikasi);
+
         return back()->with('success', 'Hasil screening berhasil dicatat.');
     }
 
     public function ubahStatus(Request $request, Pendaftaran $pendaftaran): RedirectResponse
     {
+        $this->mergeDateParts($request);
+
         $validated = $request->validate([
             'status' => ['required', Rule::in(['selesai', 'tidak_hadir'])],
             'jumlah_donor' => ['required_if:status,selesai', 'nullable', 'integer', 'min:1'],
@@ -233,7 +394,7 @@ class PendaftaranDonorController extends Controller
             return back()->withErrors(['status' => 'Hasil kehadiran hanya dapat dicatat setelah jadwal donor selesai.']);
         }
 
-        $berhasil = DB::transaction(function () use ($pendaftaran, $validated) {
+        $hasil = DB::transaction(function () use ($pendaftaran, $validated) {
             $lockedPendaftaran = Pendaftaran::query()
                 ->lockForUpdate()
                 ->findOrFail($pendaftaran->getKey());
@@ -250,6 +411,10 @@ class PendaftaranDonorController extends Controller
                 $jadwalDonor = $lockedPendaftaran->jadwalDonor;
                 $pendonor = $lockedPendaftaran->pendonor;
 
+                if (! $pendonor || ! $pendonor->golongan_darah || ! $pendonor->rhesus) {
+                    return 'profil_tidak_lengkap';
+                }
+
                 RiwayatDonor::create([
                     'pendonor_id' => $lockedPendaftaran->pendonor_id,
                     'pendaftaran_id' => $lockedPendaftaran->id,
@@ -262,6 +427,7 @@ class PendaftaranDonorController extends Controller
                 StokDarah::create([
                     'pendonor_id' => $pendonor->id,
                     'pendaftaran_id' => $lockedPendaftaran->id,
+                    'lokasi' => $jadwalDonor->lokasi,
                     'golongan_darah' => $pendonor->golongan_darah,
                     'rhesus' => $pendonor->rhesus,
                     'jumlah_kantong' => $validated['jumlah_donor'],
@@ -273,17 +439,50 @@ class PendaftaranDonorController extends Controller
                     'status' => 'selesai',
                     'tanggal_selesai_donor' => $jadwalDonor->tanggal,
                 ]);
+
+                return [
+                    'status' => 'selesai',
+                    'jumlah' => (int) $validated['jumlah_donor'],
+                    'golongan' => $pendonor->golongan_darah.$pendonor->rhesus,
+                ];
             } else {
                 $lockedPendaftaran->update(['status' => $validated['status']]);
-            }
 
-            return true;
+                return ['status' => 'tidak_hadir'];
+            }
         });
 
-        if (! $berhasil) {
+        if ($hasil === false) {
             return back()->withErrors(['status' => 'Status pendaftaran sudah berubah. Muat ulang halaman sebelum mencoba lagi.']);
         }
 
-        return back()->with('success', 'Status pendaftaran berhasil diperbarui.');
+        if ($hasil === 'profil_tidak_lengkap') {
+            return back()->withErrors(['status' => 'Golongan darah pendonor belum lengkap. Perbarui profil sebelum menambahkan stok.']);
+        }
+
+        $this->notifyDonorStatus(
+            $pendaftaran,
+            $hasil['status'] === 'selesai' ? 'Donor selesai' : 'Status pendaftaran donor diperbarui',
+            $hasil['status'] === 'selesai'
+                ? 'Donormu tercatat selesai. Terima kasih sudah mendonorkan darah.'
+                : 'Pendaftaranmu ditandai tidak hadir oleh petugas.',
+        );
+
+        $pesan = $hasil['status'] === 'selesai'
+            ? "Donor selesai. {$hasil['jumlah']} kantong golongan {$hasil['golongan']} otomatis ditambahkan ke stok."
+            : 'Pendonor berhasil ditandai tidak hadir.';
+
+        return back()->with('success', $pesan);
+    }
+
+    private function notifyDonorStatus(Pendaftaran $pendaftaran, string $title, string $message): void
+    {
+        $user = $pendaftaran->loadMissing('pendonor.user')->pendonor?->user;
+
+        $user?->notify(new StatusPendaftaranDonorNotification(
+            $title,
+            $message,
+            (int) $pendaftaran->getKey(),
+        ));
     }
 }

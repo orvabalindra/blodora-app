@@ -199,14 +199,7 @@
                                 Tanggal Permintaan
                             </label>
 
-                            <input
-                                type="date"
-                                name="tanggal_permintaan"
-                                id="tanggal_permintaan"
-                                class="admin-form-control @error('tanggal_permintaan') is-invalid @enderror"
-                                value="{{ old('tanggal_permintaan', now()->format('Y-m-d')) }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_permintaan" :value="old('tanggal_permintaan', now()->format('Y-m-d'))" />
 
                             @error('tanggal_permintaan')
 
@@ -396,7 +389,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

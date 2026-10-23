@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Pendonor')
+@section('title', 'Dasbor Pendonor')
 
 @section('content')
 
@@ -341,6 +341,14 @@
                                             </div>
 
 
+                                            <div class="col-md-6">
+                                                <div class="donor-detail-card">
+                                                    <span>Tinggi Badan</span>
+                                                    <strong>{{ $pemeriksaanTerakhir->tinggi_badan ? number_format((float) $pemeriksaanTerakhir->tinggi_badan, 1) : '-' }} <small>cm</small></strong>
+                                                </div>
+                                            </div>
+
+
                                             {{-- TEKANAN --}}
                                             <div class="col-md-6">
 
@@ -408,6 +416,8 @@
                                             </div>
 
                                         </div>
+
+                                        <p class="small text-muted mt-3 mb-0">Status ini berasal dari screening terakhir. Jika berat atau tinggi berubah, perbarui profil; petugas akan menilai kembali saat screening berikutnya.</p>
 
                         @else
 
@@ -516,6 +526,11 @@
 
                             </div>
 
+                            <div class="donor-info-row">
+                                <span>Tinggi Badan</span>
+                                <strong>{{ $pendonor->tinggi_badan ? number_format($pendonor->tinggi_badan, 1) . ' cm' : 'Belum diisi' }}</strong>
+                            </div>
+
                         </div>
 
 
@@ -562,7 +577,15 @@
                             @endif
                         </div>
                         <div class="donor-history-status">
-                            @if ($pendaftaranTerakhir->status === 'selesai')
+                            @php
+                                $waktuMulaiScreening = $jadwalTerakhir?->tanggal?->copy()->setTimeFromTimeString($jadwalTerakhir->waktu_mulai);
+                                $screeningDimulai = $waktuMulaiScreening && now()->greaterThanOrEqualTo($waktuMulaiScreening);
+                            @endphp
+                            @if ($pendaftaranTerakhir->persetujuan_admin === 'menunggu')
+                                <span class="donor-status-pill muted">Menunggu persetujuan admin</span>
+                            @elseif ($pendaftaranTerakhir->persetujuan_admin === 'ditolak')
+                                <span class="donor-status-pill danger">Pengajuan ditolak</span>
+                            @elseif ($pendaftaranTerakhir->status === 'selesai')
                                 <span class="donor-status-pill success">Selesai donor</span>
                             @elseif (in_array($pendaftaranTerakhir->status, ['gagal_screening', 'tidak_hadir', 'dibatalkan'], true))
                                 <span class="donor-status-pill danger">
@@ -570,6 +593,8 @@
                                 </span>
                             @elseif ($pendaftaranTerakhir->status === 'proses_donor')
                                 <span class="donor-status-pill success">Lolos screening</span>
+                            @elseif ($pendaftaranTerakhir->status === 'menunggu_screening')
+                                <span class="donor-status-pill muted">{{ $screeningDimulai ? 'Proses screening' : 'Terdaftar' }}</span>
                             @else
                                 <span class="donor-status-pill muted">
                                     {{ ucwords(str_replace('_', ' ', $pendaftaranTerakhir->status)) }}
@@ -615,10 +640,6 @@
 
                             </div>
 
-
-                            <a href="{{ route('donor.pendaftaran.index') }}" class="donor-btn-secondary">
-                                Lihat Semua
-                            </a>
 
                         </div>
 
@@ -849,130 +870,11 @@
             </div>
 
 
-            {{-- =====================================================
-            QUICK ACTIONS
-            ====================================================== --}}
-            <div class="donor-panel donor-quick-panel">
-
-                <div class="donor-panel-header">
-
-                    <div>
-
-                        <span class="donor-section-label">
-                            AKSI CEPAT
-                        </span>
-
-                        <h3>
-                            Menu Untuk Kamu
-                        </h3>
-
-                        <p>
-                            Akses cepat ke fitur yang paling sering digunakan.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="row g-3">
-
-                    <div class="col-md-4">
-
-                        <a href="{{ route('pendonor.profile') }}" class="donor-quick-card">
-
-                            <div class="donor-quick-icon">
-                                ♙
-                            </div>
-
-                            <div class="donor-quick-content">
-
-                                <h4>
-                                    Profil Saya
-                                </h4>
-
-                                <p>
-                                    Kelola informasi pribadi pendonor.
-                                </p>
-
-                                <span>
-                                    Buka Profil →
-                                </span>
-
-                            </div>
-
-                        </a>
-
-                    </div>
-
-
-                    <div class="col-md-4">
-
-                        <a href="{{ route('donor.jadwal') }}" class="donor-quick-card">
-
-                            <div class="donor-quick-icon">
-                                ♡
-                            </div>
-
-                            <div class="donor-quick-content">
-
-                                <h4>
-                                    Pemeriksaan
-                                </h4>
-
-                                <p>
-                                    Lihat hasil pemeriksaan kesehatan.
-                                </p>
-
-                                <span>
-                                    Lihat Pemeriksaan →
-                                </span>
-
-                            </div>
-
-                        </a>
-
-                    </div>
-
-
-                    <div class="col-md-4">
-
-                        <a href="{{ route('donor.pendaftaran.index') }}" class="donor-quick-card">
-
-                            <div class="donor-quick-icon">
-                                ↻
-                            </div>
-
-                            <div class="donor-quick-content">
-
-                                <h4>
-                                    Riwayat Donor
-                                </h4>
-
-                                <p>
-                                    Lihat seluruh aktivitas donor.
-                                </p>
-
-                                <span>
-                                    Lihat Riwayat →
-                                </span>
-
-                            </div>
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
             {{-- FOOTER --}}
             <div class="donor-footer">
 
                 <span>
-                    Blodora Donor Panel
+                    Panel Pendonor Blodora
                 </span>
 
                 <span>

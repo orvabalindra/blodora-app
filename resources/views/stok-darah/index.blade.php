@@ -27,7 +27,7 @@
                     </h1>
 
                     <p>
-                        Kelola ketersediaan stok darah Blodora.
+                        Stok bertambah otomatis saat donor selesai dan berkurang saat darah disalurkan.
                     </p>
 
                 </div>
@@ -76,14 +76,16 @@
 
                     </div>
 
-                    <a href="{{ route('stok-darah.create') }}" class="btn btn-danger">
-                        + Tambah Stok
-                    </a>
-
                 </div>
 
 
                 {{-- SUCCESS --}}
+                @include('components.admin-list-search', [
+                    'action' => route('stok-darah.index'),
+                    'items' => $stokDarah,
+                    'placeholder' => 'Cari nama pendonor, lokasi, atau golongan darah',
+                ])
+
                 @if(session('success'))
 
                     <div class="alert alert-success border-0 rounded-3 mb-4">
@@ -114,12 +116,13 @@
 
                                     <th>NO</th>
                                     <th>PENDONOR</th>
+                                    <th>LOKASI</th>
                                     <th>GOLONGAN</th>
                                     <th>RHESUS</th>
                                     <th>JUMLAH</th>
                                     <th>TANGGAL MASUK</th>
                                     <th>KADALUARSA</th>
-                                    <th class="text-end">AKSI</th>
+                                    <th class="text-end">DETAIL</th>
 
                                 </tr>
 
@@ -132,7 +135,7 @@
                                                     <tr>
 
                                                         <td>
-                                                            {{ $index + 1 }}
+                                                            {{ $stokDarah->firstItem() + $index }}
                                                         </td>
 
                                                         <td>
@@ -156,6 +159,8 @@
                                                             </div>
 
                                                         </td>
+
+                                                        <td>{{ $stok->lokasi ?? 'Lokasi belum dicatat' }}</td>
 
                                                         <td>
 
@@ -191,25 +196,6 @@
                                                                     👁
                                                                 </a>
 
-                                                                @if ($stok->pendaftaran_id === null && $stok->penyalurans->isEmpty())
-                                                                    {{-- EDIT --}}
-                                                                    <a href="{{ route('stok-darah.edit', $stok->id_stok_darah) }}"
-                                                                        class="admin-action-btn edit" title="Edit">
-                                                                        ✎
-                                                                    </a>
-
-                                                                    {{-- HAPUS --}}
-                                                                    <form action="{{ route('stok-darah.destroy', $stok->id_stok_darah) }}" method="POST"
-                                                                        class="d-inline"
-                                                                        onsubmit="return confirm('Yakin ingin menghapus stok darah ini?')">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="submit" class="admin-action-btn delete" title="Hapus">
-                                                                            ×
-                                                                        </button>
-                                                                    </form>
-                                                                @endif
-
                                                             </div>
 
                                                         </td>
@@ -233,11 +219,11 @@
                         </div>
 
                         <strong>
-                            Belum ada stok darah
+                            {{ request()->filled('q') ? 'Tidak ada stok yang cocok dengan pencarian.' : 'Belum ada stok darah.' }}
                         </strong>
 
                         <span>
-                            Tambahkan stok darah untuk mulai mengelola persediaan.
+                            Stok akan tercatat otomatis setelah petugas menyelesaikan donor.
                         </span>
 
                     </div>
@@ -247,10 +233,12 @@
             </div>
 
 
+            <div class="mt-4">{{ $stokDarah->links() }}</div>
+
             <div class="admin-footer">
 
                 <span>
-                    Blodora Admin Panel
+                    Panel Admin Blodora
                 </span>
 
                 <span>

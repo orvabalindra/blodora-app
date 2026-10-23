@@ -69,7 +69,7 @@
                     </span>
 
                     <h3>
-                        Riwayat Donor #{{ $riwayatDonor->id_riwayat_donor }}
+                        Detail Riwayat Donor
                     </h3>
 
                     <p>
@@ -86,7 +86,7 @@
                             href="{{ route('riwayat-donor.edit', $riwayatDonor) }}"
                             class="admin-btn-primary"
                         >
-                            Edit
+                            Ubah
                         </a>
                     @endif
 
@@ -123,7 +123,7 @@
                     <div class="admin-detail-item full-width">
                         <span class="admin-detail-label">Pendaftaran</span>
                         <a href="{{ route('pendaftaran-donor.admin.index') }}" class="admin-table-link">
-                            Riwayat donor dari pendaftaran #{{ $riwayatDonor->pendaftaran_id }}
+                            Lihat pendaftaran donor
                         </a>
                     </div>
                 @endif
@@ -207,8 +207,7 @@
                             href="{{ route('pemeriksaan.show', $riwayatDonor->pemeriksaan) }}"
                             class="admin-table-link"
                         >
-                            Pemeriksaan
-                            #{{ $riwayatDonor->pemeriksaan->id_pemeriksaan }}
+                            Lihat pemeriksaan pendonor
                         </a>
 
                         <span class="admin-detail-sub-label">
@@ -288,7 +287,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

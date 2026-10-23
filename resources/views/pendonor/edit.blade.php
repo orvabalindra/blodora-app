@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Pendonor')
+@section('title', 'Ubah Pendonor')
 
 @section('content')
 
@@ -23,7 +23,7 @@
                 </span>
 
                 <h1>
-                    Edit Pendonor
+                    Ubah Pendonor
                 </h1>
 
                 <p>
@@ -239,6 +239,20 @@
 
                     {{-- GOLONGAN DARAH --}}
                     <div class="col-md-6">
+                        <div class="admin-form-group">
+                            <label for="tinggi_badan" class="admin-form-label">Tinggi Badan</label>
+                            <div class="admin-input-unit">
+                                <input type="number" step="0.1" min="50" max="250" id="tinggi_badan" name="tinggi_badan"
+                                    class="admin-form-control @error('tinggi_badan') is-invalid @enderror"
+                                    value="{{ old('tinggi_badan', $pendonor->tinggi_badan) }}">
+                                <span class="admin-input-unit-label">cm</span>
+                            </div>
+                            @error('tinggi_badan')<div class="admin-form-error">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    {{-- GOLONGAN DARAH --}}
+                    <div class="col-md-6">
 
                         <div class="admin-form-group">
 
@@ -392,7 +406,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

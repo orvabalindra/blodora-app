@@ -10,11 +10,24 @@ class RumahSakitController extends Controller
     /**
      * Menampilkan semua data Faskes.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
         $rumahSakits = RumahSakit::withCount('permintaanDarah')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $search = trim((string) $request->query('q'));
+
+                $query->where(function ($query) use ($search): void {
+                    $query->where('nama_rs', 'like', "{$search}%")
+                        ->orWhere('no_telp', 'like', "{$search}%");
+                });
+            })
             ->latest('id_rs')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view(
             'rumah-sakit.index',

@@ -10,19 +10,20 @@ class HomeController extends Controller
     public function index(): View
     {
         $stokDarahs = StokDarah::query()
-            ->whereDate('tanggal_kadaluarsa', '>=', today())
+            ->where('tanggal_kadaluarsa', '>=', today()->toDateString())
             ->where('jumlah_kantong', '>', 0)
-            ->selectRaw('golongan_darah, SUM(jumlah_kantong) as jumlah_kantong')
-            ->groupBy('golongan_darah')
-            ->pluck('jumlah_kantong', 'golongan_darah');
+            ->selectRaw('lokasi, golongan_darah, rhesus, SUM(jumlah_kantong) as jumlah_kantong, MAX(updated_at) as terakhir_diperbarui')
+            ->groupBy('lokasi', 'golongan_darah', 'rhesus')
+            ->orderBy('golongan_darah')
+            ->orderBy('lokasi')
+            ->get();
 
-        $stokDarahs = collect([
-            'A' => 0,
-            'B' => 0,
-            'AB' => 0,
-            'O' => 0,
-        ])->merge($stokDarahs);
+        $stokDarahPerGolongan = $stokDarahs->groupBy(fn (StokDarah $stok) => $stok->golongan_darah.$stok->rhesus);
+        $stokTerakhirDiperbarui = $stokDarahs->max('terakhir_diperbarui');
 
-        return view('landingpage.index', compact('stokDarahs'));
+        return view('landingpage.index', compact(
+            'stokDarahPerGolongan',
+            'stokTerakhirDiperbarui'
+        ));
     }
 }

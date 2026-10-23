@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Forgot Password - Blodora')
+@section('title', 'Lupa Kata Sandi - Blodora')
 
 @section('content')
 
@@ -10,20 +10,20 @@
             href="{{ route('login') }}"
             class="auth-back"
         >
-            ← Back
+            ← Kembali
         </a>
 
         <div class="auth-switch">
 
             <span>
-                Remember your password?
+                Ingat kata sandi Anda?
             </span>
 
             <a
                 href="{{ route('login') }}"
                 class="auth-login-link"
             >
-                Login
+                Masuk
             </a>
 
         </div>
@@ -42,11 +42,11 @@
             >
 
             <h1 class="auth-title">
-                Forgot Password?
+                Lupa Kata Sandi?
             </h1>
 
             <p class="auth-subtitle">
-                Enter your email to receive a reset link
+                Masukkan alamat email untuk menerima tautan pengaturan ulang kata sandi
             </p>
 
         </div>
@@ -85,7 +85,7 @@
                     for="email"
                     class="auth-label"
                 >
-                    Email
+                    Alamat email
                 </label>
 
                 <input
@@ -94,7 +94,7 @@
                     name="email"
                     class="auth-input"
                     value="{{ old('email') }}"
-                    placeholder="Enter your email"
+                    placeholder="Masukkan alamat email"
                     required
                     autofocus
                 >
@@ -108,12 +108,12 @@
             >
 
                 <span class="btn-text">
-                    Send Reset Link
+                    Kirim Tautan Pengaturan Ulang
                 </span>
 
                 <span class="btn-loading d-none">
                     <span class="auth-spinner"></span>
-                    Sending...
+                    Mengirim...
                 </span>
 
             </button>
@@ -123,10 +123,10 @@
 
         <div class="auth-footer">
 
-            Remember your password?
+            Ingat kata sandi Anda?
 
             <a href="{{ route('login') }}">
-                Login
+                Masuk
             </a>
 
         </div>

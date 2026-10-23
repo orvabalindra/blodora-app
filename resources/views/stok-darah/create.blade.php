@@ -132,6 +132,29 @@
                     </div>
 
 
+                    {{-- LOKASI STOK --}}
+                    <div class="col-md-6">
+
+                        <div class="admin-form-group">
+                            <label for="lokasi" class="admin-form-label">Lokasi Stok</label>
+                            <input
+                                type="text"
+                                id="lokasi"
+                                name="lokasi"
+                                maxlength="255"
+                                class="admin-form-control @error('lokasi') is-invalid @enderror"
+                                value="{{ old('lokasi') }}"
+                                placeholder="Contoh: UDD PMI Kota Malang"
+                                required
+                            >
+                            @error('lokasi')
+                                <div class="admin-form-error">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                    </div>
+
+
                     {{-- GOLONGAN DARAH --}}
                     <div class="col-md-3">
 
@@ -288,14 +311,7 @@
                                 Tanggal Masuk
                             </label>
 
-                            <input
-                                id="tanggal_masuk"
-                                type="date"
-                                name="tanggal_masuk"
-                                class="admin-form-control @error('tanggal_masuk') is-invalid @enderror"
-                                value="{{ old('tanggal_masuk') }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_masuk" :value="old('tanggal_masuk')" />
 
                             @error('tanggal_masuk')
 
@@ -322,14 +338,7 @@
                                 Tanggal Kadaluarsa
                             </label>
 
-                            <input
-                                id="tanggal_kadaluarsa"
-                                type="date"
-                                name="tanggal_kadaluarsa"
-                                class="admin-form-control @error('tanggal_kadaluarsa') is-invalid @enderror"
-                                value="{{ old('tanggal_kadaluarsa') }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_kadaluarsa" :value="old('tanggal_kadaluarsa')" />
 
                             @error('tanggal_kadaluarsa')
 
@@ -374,7 +383,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

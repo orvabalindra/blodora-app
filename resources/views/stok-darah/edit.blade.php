@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Stok Darah')
+@section('title', 'Ubah Stok Darah')
 
 @section('content')
 
@@ -23,7 +23,7 @@
                 </span>
 
                 <h1>
-                    Edit Stok Darah
+                    Ubah Stok Darah
                 </h1>
 
                 <p>
@@ -176,6 +176,29 @@
 
                             @enderror
 
+                        </div>
+
+                    </div>
+
+
+                    {{-- LOKASI STOK --}}
+                    <div class="col-md-6">
+
+                        <div class="admin-form-group">
+                            <label for="lokasi" class="admin-form-label">Lokasi Stok</label>
+                            <input
+                                type="text"
+                                id="lokasi"
+                                name="lokasi"
+                                maxlength="255"
+                                class="admin-form-control @error('lokasi') is-invalid @enderror"
+                                value="{{ old('lokasi', $stokDarah->lokasi) }}"
+                                placeholder="Contoh: UDD PMI Kota Malang"
+                                required
+                            >
+                            @error('lokasi')
+                                <div class="admin-form-error">{{ $message }}</div>
+                            @enderror
                         </div>
 
                     </div>
@@ -337,14 +360,7 @@
                                 Tanggal Masuk
                             </label>
 
-                            <input
-                                type="date"
-                                name="tanggal_masuk"
-                                id="tanggal_masuk"
-                                class="admin-form-control @error('tanggal_masuk') is-invalid @enderror"
-                                value="{{ old('tanggal_masuk', optional($stokDarah->tanggal_masuk)->format('Y-m-d')) }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_masuk" :value="old('tanggal_masuk', optional($stokDarah->tanggal_masuk)->format('Y-m-d'))" />
 
                             @error('tanggal_masuk')
 
@@ -371,14 +387,7 @@
                                 Tanggal Kadaluarsa
                             </label>
 
-                            <input
-                                type="date"
-                                name="tanggal_kadaluarsa"
-                                id="tanggal_kadaluarsa"
-                                class="admin-form-control @error('tanggal_kadaluarsa') is-invalid @enderror"
-                                value="{{ old('tanggal_kadaluarsa', optional($stokDarah->tanggal_kadaluarsa)->format('Y-m-d')) }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_kadaluarsa" :value="old('tanggal_kadaluarsa', optional($stokDarah->tanggal_kadaluarsa)->format('Y-m-d'))" />
 
                             @error('tanggal_kadaluarsa')
 
@@ -423,7 +432,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

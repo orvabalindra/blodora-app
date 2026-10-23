@@ -16,6 +16,8 @@ class Pendaftaran extends Model
         'pendonor_id',
         'jadwal_donor_id',
         'status',
+        'persetujuan_admin',
+        'catatan_admin',
         'keterangan_medis',
         'tanggal_selesai_donor',
     ];

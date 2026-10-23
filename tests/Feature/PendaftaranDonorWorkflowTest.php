@@ -37,6 +37,8 @@ class PendaftaranDonorWorkflowTest extends TestCase
 
         $this->assertSame('menunggu_screening', $pendaftaran->status);
 
+        $this->travelTo($jadwal->tanggal->copy()->setTime(9, 0));
+
         $this->actingAs($admin)
             ->put(route('pendaftaran-donor.screening', $pendaftaran), [
                 'keputusan' => 'layak',
@@ -87,6 +89,7 @@ class PendaftaranDonorWorkflowTest extends TestCase
             ->where('pendaftaran_id', $pendaftaran->id)
             ->firstOrFail();
         $this->assertSame($pendonor->id, $stokDarah->pendonor_id);
+        $this->assertSame($jadwal->lokasi, $stokDarah->lokasi);
         $this->assertSame('O', $stokDarah->golongan_darah);
         $this->assertSame('+', $stokDarah->rhesus);
         $this->assertSame(2, $stokDarah->jumlah_kantong);
@@ -117,6 +120,8 @@ class PendaftaranDonorWorkflowTest extends TestCase
         $pendonor = $this->createPendonor($this->createUser('pendonor', 'donor-failed-screen'));
         $jadwal = $this->createJadwal(today()->addDay());
         $pendaftaran = $this->createPendaftaran($pendonor, $jadwal);
+
+        $this->travelTo($jadwal->tanggal->copy()->setTime(9, 0));
 
         $this->actingAs($admin)
             ->put(route('pendaftaran-donor.screening', $pendaftaran), [

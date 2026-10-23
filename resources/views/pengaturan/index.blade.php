@@ -85,7 +85,7 @@
                 <div class="admin-detail-item">
 
                     <span class="admin-detail-label">
-                        Username
+                        Nama pengguna
                     </span>
 
                     <strong class="admin-detail-value">
@@ -117,7 +117,7 @@
                     class="admin-btn-secondary"
                     disabled
                 >
-                    Edit Profil
+                    Ubah Profil
                 </button>
 
                 <button
@@ -125,7 +125,7 @@
                     class="admin-btn-primary"
                     disabled
                 >
-                    Ubah Password
+                    Ubah Kata sandi
                 </button>
 
             </div>
@@ -214,7 +214,7 @@
                     </span>
 
                     <h3>
-                        Tampilan Dashboard
+                        Tampilan Dasbor
                     </h3>
 
                     <p>
@@ -340,7 +340,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

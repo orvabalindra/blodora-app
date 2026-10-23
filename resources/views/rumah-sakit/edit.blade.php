@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Faskes')
+@section('title', 'Ubah Faskes')
 
 @section('content')
 
@@ -23,7 +23,7 @@
                 </span>
 
                 <h1>
-                    Edit Faskes
+                    Ubah Faskes
                 </h1>
 
                 <p>
@@ -263,7 +263,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

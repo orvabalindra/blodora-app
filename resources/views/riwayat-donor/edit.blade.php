@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Riwayat Donor')
+@section('title', 'Ubah Riwayat Donor')
 
 @section('content')
 
@@ -23,7 +23,7 @@
                 </span>
 
                 <h1>
-                    Edit Riwayat Donor
+                    Ubah Riwayat Donor
                 </h1>
 
                 <p>
@@ -68,7 +68,7 @@
                     </span>
 
                     <h3>
-                        Edit Riwayat Donor
+                        Ubah Riwayat Donor
                     </h3>
 
                     <p>
@@ -215,7 +215,6 @@
                                             $riwayatDonor->pemeriksaan_id
                                         ) == $pemeriksaan->id_pemeriksaan ? 'selected' : '' }}
                                     >
-                                        #{{ $pemeriksaan->id_pemeriksaan }}
                                         —
                                         {{ $pemeriksaan->pendonor?->nama_lengkap ?? 'Pendonor tidak ditemukan' }}
                                         —
@@ -251,17 +250,7 @@
                                 Tanggal Donor
                             </label>
 
-                            <input
-                                type="date"
-                                name="tanggal_donor"
-                                id="tanggal_donor"
-                                class="admin-form-control @error('tanggal_donor') is-invalid @enderror"
-                                value="{{ old(
-                                    'tanggal_donor',
-                                    optional($riwayatDonor->tanggal_donor)->format('Y-m-d')
-                                ) }}"
-                                required
-                            >
+                            <x-admin-date-parts name="tanggal_donor" :value="old('tanggal_donor', optional($riwayatDonor->tanggal_donor)->format('Y-m-d'))" />
 
                             @error('tanggal_donor')
 
@@ -410,7 +399,7 @@
         <div class="admin-footer">
 
             <span>
-                Blodora Admin Panel
+                Panel Admin Blodora
             </span>
 
             <span>

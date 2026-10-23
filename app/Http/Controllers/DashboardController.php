@@ -64,17 +64,15 @@ class DashboardController extends Controller
         $screeningTidakLayak = 0;
 
         if (Schema::hasTable('pemeriksaans')) {
+            $pemeriksaanStats = DB::table('pemeriksaans')
+                ->selectRaw('COUNT(*) as total')
+                ->selectRaw("SUM(CASE WHEN hasil = 'layak' THEN 1 ELSE 0 END) as layak")
+                ->selectRaw("SUM(CASE WHEN hasil = 'tidak layak' THEN 1 ELSE 0 END) as tidak_layak")
+                ->first();
 
-            $totalPemeriksaan = DB::table('pemeriksaans')
-                ->count();
-
-            $screeningLayak = DB::table('pemeriksaans')
-                ->where('hasil', 'layak')
-                ->count();
-
-            $screeningTidakLayak = DB::table('pemeriksaans')
-                ->where('hasil', 'tidak layak')
-                ->count();
+            $totalPemeriksaan = (int) $pemeriksaanStats->total;
+            $screeningLayak = (int) $pemeriksaanStats->layak;
+            $screeningTidakLayak = (int) $pemeriksaanStats->tidak_layak;
         }
 
         /*
@@ -88,19 +86,15 @@ class DashboardController extends Controller
         $donorGagal = 0;
 
         if (Schema::hasTable('riwayat__donors')) {
+            $donorStats = DB::table('riwayat__donors')
+                ->selectRaw('COUNT(*) as total')
+                ->selectRaw("SUM(CASE WHEN status = 'sukses' THEN 1 ELSE 0 END) as sukses")
+                ->selectRaw("SUM(CASE WHEN status = 'gagal' THEN 1 ELSE 0 END) as gagal")
+                ->first();
 
-            $totalRiwayatDonor =
-                DB::table('riwayat__donors')->count();
-
-            $donorSukses =
-                DB::table('riwayat__donors')
-                    ->where('status', 'sukses')
-                    ->count();
-
-            $donorGagal =
-                DB::table('riwayat__donors')
-                    ->where('status', 'gagal')
-                    ->count();
+            $totalRiwayatDonor = (int) $donorStats->total;
+            $donorSukses = (int) $donorStats->sukses;
+            $donorGagal = (int) $donorStats->gagal;
         }
 
         /*
@@ -118,35 +112,27 @@ class DashboardController extends Controller
 
         if (Schema::hasTable('permintaan__darahs')) {
 
-            $totalPermintaan =
-                DB::table('permintaan__darahs')->count();
+            $permintaanStats = DB::table('permintaan__darahs')
+                ->selectRaw('COUNT(*) as total')
+                ->selectRaw("SUM(CASE WHEN status = 'diproses' THEN 1 ELSE 0 END) as diproses")
+                ->selectRaw("SUM(CASE WHEN status = 'ditolak' THEN 1 ELSE 0 END) as ditolak")
+                ->first();
 
-            $permintaanDiproses =
-                DB::table('permintaan__darahs')
-                    ->where('status', 'diproses')
-                    ->count();
-
-            $permintaanDitolak =
-                DB::table('permintaan__darahs')
-                    ->where('status', 'ditolak')
-                    ->count();
+            $totalPermintaan = (int) $permintaanStats->total;
+            $permintaanDiproses = (int) $permintaanStats->diproses;
+            $permintaanDitolak = (int) $permintaanStats->ditolak;
 
             if (Schema::hasColumn('permintaan__darahs', 'jumlah_terpenuhi')) {
-                $permintaanMenungguPenyaluran = DB::table('permintaan__darahs')
+                $penyaluranStats = DB::table('permintaan__darahs')
                     ->where('status', 'diterima')
-                    ->where('jumlah_terpenuhi', 0)
-                    ->count();
+                    ->selectRaw('SUM(CASE WHEN jumlah_terpenuhi = 0 THEN 1 ELSE 0 END) as menunggu')
+                    ->selectRaw('SUM(CASE WHEN jumlah_terpenuhi > 0 AND jumlah_terpenuhi < jumlah_minta THEN 1 ELSE 0 END) as sebagian')
+                    ->selectRaw('SUM(CASE WHEN jumlah_terpenuhi >= jumlah_minta THEN 1 ELSE 0 END) as terpenuhi')
+                    ->first();
 
-                $permintaanSebagian = DB::table('permintaan__darahs')
-                    ->where('status', 'diterima')
-                    ->where('jumlah_terpenuhi', '>', 0)
-                    ->whereColumn('jumlah_terpenuhi', '<', 'jumlah_minta')
-                    ->count();
-
-                $permintaanTerpenuhi = DB::table('permintaan__darahs')
-                    ->where('status', 'diterima')
-                    ->whereColumn('jumlah_terpenuhi', '>=', 'jumlah_minta')
-                    ->count();
+                $permintaanMenungguPenyaluran = (int) $penyaluranStats->menunggu;
+                $permintaanSebagian = (int) $penyaluranStats->sebagian;
+                $permintaanTerpenuhi = (int) $penyaluranStats->terpenuhi;
             } else {
                 $permintaanMenungguPenyaluran = DB::table('permintaan__darahs')
                     ->where('status', 'diterima')
@@ -172,8 +158,22 @@ class DashboardController extends Controller
         ];
 
         $totalStok = 0;
+        $stokAkanKedaluwarsa = collect();
+        $jumlahStokKedaluwarsa = 0;
 
         if (Schema::hasTable('stok__darahs')) {
+
+            $jumlahStokKedaluwarsa = DB::table('stok__darahs')
+                ->whereDate('tanggal_kadaluarsa', '<', Carbon::today())
+                ->where('jumlah_kantong', '>', 0)
+                ->sum('jumlah_kantong');
+
+            $stokAkanKedaluwarsa = DB::table('stok__darahs')
+                ->whereBetween('tanggal_kadaluarsa', [Carbon::today(), Carbon::today()->copy()->addDays(30)])
+                ->where('jumlah_kantong', '>', 0)
+                ->orderBy('tanggal_kadaluarsa')
+                ->limit(5)
+                ->get(['id_stok_darah', 'golongan_darah', 'rhesus', 'jumlah_kantong', 'tanggal_kadaluarsa']);
 
             $stokRows = DB::table('stok__darahs')
                 ->whereDate(
@@ -237,33 +237,43 @@ class DashboardController extends Controller
             'O' => $stok['O+'] + $stok['O-'],
         ];
 
+        $stokMenipis = collect($stokGolongan)
+            ->filter(fn (int $jumlah) => $jumlah <= 5)
+            ->map(fn (int $jumlah, string $golongan) => ['golongan' => $golongan, 'jumlah' => $jumlah])
+            ->values();
+
         /*
         |--------------------------------------------------------------------------
         | 8. DATA AKTIVITAS TERBARU
         |--------------------------------------------------------------------------
         */
 
-        $aktivitas = DB::table('riwayat__donors')
-            ->join(
-                'pendonors',
-                'riwayat__donors.pendonor_id',
-                '=',
-                'pendonors.id'
-            )
-            ->select(
-                'riwayat__donors.id_riwayat_donor',
-                'riwayat__donors.tanggal_donor',
-                'riwayat__donors.jumlah_donor',
-                'riwayat__donors.status',
-                'pendonors.nama_lengkap',
-                'pendonors.golongan_darah',
-                'pendonors.rhesus'
-            )
-            ->orderByDesc(
-                'riwayat__donors.id_riwayat_donor'
-            )
-            ->limit(5)
-            ->get();
+        $aktivitas = collect();
+
+        if (Schema::hasTable('riwayat__donors') && Schema::hasTable('pendonors')) {
+            $aktivitas = DB::table('riwayat__donors')
+                ->join(
+                    'pendonors',
+                    'riwayat__donors.pendonor_id',
+                    '=',
+                    'pendonors.id'
+                )
+                ->select(
+                    'riwayat__donors.id_riwayat_donor',
+                    'riwayat__donors.tanggal_donor',
+                    'riwayat__donors.jumlah_donor',
+                    'riwayat__donors.status',
+                    'pendonors.nama_lengkap',
+                    'pendonors.golongan_darah',
+                    'pendonors.rhesus'
+                )
+                ->orderByDesc(
+                    'riwayat__donors.id_riwayat_donor'
+                )
+                ->whereBetween('riwayat__donors.tanggal_donor', [Carbon::today()->subDays(6), Carbon::today()->endOfDay()])
+                ->limit(5)
+                ->get();
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -276,24 +286,32 @@ class DashboardController extends Controller
 
         if (Schema::hasTable('riwayat__donors')) {
 
+            $today = Carbon::today();
+            $startDate = $today->copy()->subDays(6);
+
             for ($i = 6; $i >= 0; $i--) {
 
-                $date = Carbon::today()
-                    ->subDays($i);
+                $date = $today->copy()->subDays($i);
 
                 $chartLabels[] =
                     $date->translatedFormat('d M');
 
-                $jumlah =
-                    DB::table('riwayat__donors')
-                        ->whereDate(
-                            'tanggal_donor',
-                            $date
-                        )
-                        ->where('status', 'sukses')
-                        ->count();
+                $chartData[] = 0;
+            }
 
-                $chartData[] = $jumlah;
+            $jumlahPerHari = DB::table('riwayat__donors')
+                ->where('status', 'sukses')
+                ->whereBetween('tanggal_donor', [
+                    $startDate->copy()->startOfDay(),
+                    $today->copy()->endOfDay(),
+                ])
+                ->selectRaw('DATE(tanggal_donor) as tanggal, COUNT(*) as total')
+                ->groupByRaw('DATE(tanggal_donor)')
+                ->pluck('total', 'tanggal');
+
+            for ($i = 0; $i < 7; $i++) {
+                $dateKey = $startDate->copy()->addDays($i)->toDateString();
+                $chartData[$i] = (int) ($jumlahPerHari[$dateKey] ?? 0);
             }
         }
 
@@ -356,6 +374,9 @@ class DashboardController extends Controller
                 'stok',
                 'stokGolongan',
                 'totalStok',
+                'stokMenipis',
+                'stokAkanKedaluwarsa',
+                'jumlahStokKedaluwarsa',
                 'aktivitas',
                 'chartLabels',
                 'chartData',
