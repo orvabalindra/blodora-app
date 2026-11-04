@@ -41,9 +41,9 @@ class PemeriksaanController extends Controller
      */
     public function create()
     {
-        $pendonors = Pendonor::orderBy('nama_lengkap')->get();
+        $selectedPendonor = Pendonor::query()->find(old('pendonor_id'));
 
-        return view('pemeriksaan.create', compact('pendonors'));
+        return view('pemeriksaan.create', compact('selectedPendonor'));
     }
 
     /**
@@ -117,11 +117,13 @@ class PemeriksaanController extends Controller
                 ->with('info', 'Pemeriksaan yang terhubung dengan pendaftaran atau riwayat donor tidak dapat diubah.');
         }
 
-        $pendonors = Pendonor::orderBy('nama_lengkap')->get();
+        $selectedPendonor = old('pendonor_id')
+            ? Pendonor::query()->find(old('pendonor_id'))
+            : $pemeriksaan->pendonor;
 
         return view('pemeriksaan.edit', compact(
             'pemeriksaan',
-            'pendonors'
+            'selectedPendonor'
         ));
     }
 

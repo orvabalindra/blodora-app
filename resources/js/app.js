@@ -1,5 +1,146 @@
 import 'bootstrap';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
+function showPageFeedback() {
+    const feedback = document.querySelectorAll('.admin-form-alert, .auth-error, .auth-success, .alert[role="alert"], .alert-success, .alert-danger, .alert-info, .alert-warning');
+    let previousDialog = Promise.resolve();
+
+    feedback.forEach(function (element) {
+        const message = element.innerText.trim();
+        if (!message) return;
+
+        const isSuccess = element.classList.contains('admin-form-alert-success') || element.classList.contains('auth-success') || element.classList.contains('alert-success');
+        const isInfo = element.classList.contains('alert-info') || (element.classList.contains('admin-form-alert') && !element.classList.contains('admin-form-alert-danger') && !element.classList.contains('admin-form-alert-success'));
+
+        previousDialog = previousDialog.then(function () {
+            return Swal.fire({
+                icon: isSuccess ? 'success' : isInfo ? 'info' : 'error',
+                title: isSuccess ? 'Berhasil' : isInfo ? 'Informasi' : 'Periksa kembali',
+                text: message,
+                confirmButtonText: 'Mengerti',
+                confirmButtonColor: '#b42332',
+            });
+        });
+
+        element.remove();
+    });
+}
+
+function initializeSweetAlertConfirmations() {
+    document.addEventListener('submit', function (event) {
+        const form = event.target.closest('form');
+        if (!form || form.dataset.swalConfirmed === 'true') return;
+
+        const method = (form.getAttribute('method') || 'get').toUpperCase();
+        const needsConfirmation = Boolean(form.dataset.swalConfirm) || !['GET', 'DIALOG'].includes(method);
+        if (!needsConfirmation) return;
+
+        event.preventDefault();
+
+        const submitter = event.submitter;
+        const actionLabel = (submitter?.innerText || submitter?.value || submitter?.title || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('id-ID');
+        const isDelete = /hapus|menghapus/.test(actionLabel);
+        const isLogout = /keluar|logout/.test(actionLabel);
+        const isLogin = /masuk/.test(actionLabel);
+        const isRegister = /daftar|buat akun/.test(actionLabel);
+        const isReadStatus = /baca|dibaca|tandai/.test(actionLabel);
+        const isSave = /simpan|perbarui|ubah|buat|tambah/.test(actionLabel);
+        const title = form.dataset.swalTitle
+            || (isDelete ? 'Hapus data ini?'
+                : isLogout ? 'Keluar dari akun?'
+                    : isLogin ? 'Masuk ke akun?'
+                        : isRegister ? 'Kirim pendaftaran?'
+                            : isReadStatus ? 'Perbarui status notifikasi?'
+                                : isSave ? 'Simpan perubahan?'
+                                : 'Lanjutkan tindakan?');
+        const message = form.dataset.swalConfirm
+            || (isDelete ? 'Data yang dipilih akan dihapus.'
+                : isLogout ? 'Anda akan keluar dari akun Blodora.'
+                    : isLogin ? 'Blodora akan memeriksa informasi masuk Anda.'
+                        : isRegister ? 'Informasi akun akan dikirim untuk diproses.'
+                            : isReadStatus ? 'Status notifikasi yang dipilih akan diperbarui.'
+                                : isSave ? 'Informasi yang Anda masukkan akan disimpan.'
+                                : 'Formulir ini akan dikirim untuk diproses.');
+        Swal.fire({
+            icon: form.dataset.swalIcon || 'warning',
+            title,
+            text: message,
+            showCancelButton: true,
+            confirmButtonText: form.dataset.swalConfirmButton || 'Ya, lanjutkan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#b42332',
+            cancelButtonColor: '#64748b',
+            reverseButtons: true,
+            focusCancel: true,
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            form.dataset.swalConfirmed = 'true';
+            if (form.requestSubmit) {
+                form.requestSubmit(submitter || undefined);
+            } else {
+                form.submit();
+            }
+        });
+    }, true);
+}
+
+function initializeSweetAlertValidation() {
+    let validationDialogOpen = false;
+
+    function getLocalizedValidationMessage(field) {
+        const label = field.labels?.[0]?.innerText.trim().replace(/\s+/g, ' ') || field.getAttribute('aria-label') || 'Isian ini';
+        const validity = field.validity;
+
+        if (validity.customError) return field.validationMessage;
+        if (validity.valueMissing) return `${label} wajib diisi.`;
+        if (validity.typeMismatch && field.type === 'email') return 'Masukkan alamat surel dengan format yang benar.';
+        if (validity.typeMismatch && field.type === 'url') return 'Masukkan alamat situs dengan format yang benar.';
+        if (validity.tooShort) return `${label} harus terdiri dari sedikitnya ${field.minLength} karakter.`;
+        if (validity.tooLong) return `${label} tidak boleh lebih dari ${field.maxLength} karakter.`;
+        if (validity.rangeUnderflow) return `${label} tidak boleh kurang dari ${field.min || field.minLength}.`;
+        if (validity.rangeOverflow) return `${label} tidak boleh lebih dari ${field.max || field.maxLength}.`;
+        if (validity.stepMismatch) return `Periksa kembali nilai ${label}.`;
+        if (validity.patternMismatch) return `${label} belum sesuai dengan format yang diminta.`;
+        if (validity.badInput) return `Masukkan nilai ${label} dengan benar.`;
+
+        return `Periksa kembali isian ${label}.`;
+    }
+
+    document.addEventListener('invalid', function (event) {
+        event.preventDefault();
+
+        const field = event.target;
+        const picker = field.closest('.blodora-picker');
+        const selectWrapper = field.closest('.blodora-select');
+        const focusTarget = picker?.querySelector('.blodora-picker-trigger')
+            || selectWrapper?.querySelector('.blodora-select-trigger')
+            || field;
+
+        focusTarget.setAttribute('aria-invalid', 'true');
+        if (validationDialogOpen) return;
+
+        validationDialogOpen = true;
+        Swal.fire({
+            icon: 'warning',
+            title: 'Periksa isian',
+            text: getLocalizedValidationMessage(field),
+            confirmButtonText: 'Mengerti',
+            confirmButtonColor: '#b42332',
+        }).then(function () {
+            validationDialogOpen = false;
+            focusTarget.focus();
+        });
+    }, true);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    showPageFeedback();
+    initializeSweetAlertConfirmations();
+    initializeSweetAlertValidation();
+});
 
 function initializeThemedPickers() {
     document.querySelectorAll('input[type="date"], input[type="time"], input[type="month"]').forEach(function (input, index) {
@@ -368,11 +509,6 @@ function initializeThemedPickers() {
             if (event.key === 'Escape') closePicker();
         });
         input.addEventListener('change', updateValue);
-        input.addEventListener('invalid', function (event) {
-            event.preventDefault();
-            trigger.focus();
-            trigger.setAttribute('aria-invalid', 'true');
-        });
         input.form?.addEventListener('reset', () => window.setTimeout(updateValue, 0));
         document.addEventListener('click', event => { if (!wrapper.contains(event.target)) closePicker(); });
         document.addEventListener('keydown', event => { if (event.key === 'Escape') closePicker(); });
@@ -426,7 +562,7 @@ function initializeThemedSelects() {
         menu.setAttribute('role', 'listbox');
         trigger.setAttribute('aria-controls', menu.id);
 
-        const options = Array.from(select.options).map(function (option, optionIndex) {
+        function createOption(option, optionIndex) {
             const item = document.createElement('button');
             item.type = 'button';
             item.className = 'blodora-select-option';
@@ -446,7 +582,9 @@ function initializeThemedSelects() {
             });
             menu.appendChild(item);
             return item;
-        });
+        }
+
+        let options = Array.from(select.options).map(createOption);
 
         wrapper.append(trigger, menu);
         const validationMessage = document.createElement('span');
@@ -521,12 +659,10 @@ function initializeThemedSelects() {
         });
 
         select.addEventListener('change', updateValue);
-        select.addEventListener('invalid', function (event) {
-            event.preventDefault();
-            validationMessage.textContent = select.validationMessage;
-            validationMessage.hidden = false;
-            trigger.setAttribute('aria-invalid', 'true');
-            trigger.focus();
+        select.addEventListener('remote-options-updated', function () {
+            options = Array.from(select.options).map(createOption);
+            menu.replaceChildren(...options);
+            updateValue();
         });
         select.form?.addEventListener('reset', function () {
             window.setTimeout(updateValue, 0);
@@ -542,6 +678,96 @@ function initializeThemedSelects() {
 
 document.addEventListener('DOMContentLoaded', initializeThemedSelects);
 document.addEventListener('DOMContentLoaded', initializeThemedPickers);
+
+document.addEventListener('DOMContentLoaded', function initializeRemoteSelectSearch() {
+    document.querySelectorAll('[data-remote-search-input]').forEach(function (input) {
+        const select = document.getElementById(input.dataset.target);
+        const status = input.parentElement.querySelector('[data-remote-search-status]');
+        if (!select || !status) return;
+
+        let timer = null;
+        let activeRequest = null;
+        let selectedLabel = select.selectedOptions[0]?.value
+            ? select.selectedOptions[0].textContent.trim()
+            : '';
+        const placeholder = select.options[0]?.textContent || 'Pilih';
+
+        function replaceOptions(items) {
+            const selectedValue = select.value;
+            const selectedOption = selectedValue
+                ? Array.from(select.options).find(option => option.value === selectedValue)
+                : null;
+            const options = [new Option(placeholder, '')];
+
+            if (selectedOption) {
+                options.push(new Option(selectedOption.textContent, selectedOption.value, true, true));
+            }
+
+            items.forEach(function (item) {
+                if (String(item.id) === selectedValue) return;
+                options.push(new Option(item.label, item.id));
+            });
+
+            select.replaceChildren(...options);
+            select.dispatchEvent(new Event('remote-options-updated'));
+        }
+
+        select.addEventListener('change', function () {
+            const selected = select.selectedOptions[0];
+            if (selected?.value) {
+                selectedLabel = selected.textContent.trim();
+                input.value = selectedLabel;
+                status.textContent = `Pilihan: ${selectedLabel}`;
+            } else {
+                selectedLabel = '';
+            }
+        });
+
+        input.addEventListener('input', function () {
+            const query = input.value.trim();
+            if (query !== selectedLabel) {
+                select.value = '';
+                selectedLabel = '';
+                replaceOptions([]);
+            }
+
+            window.clearTimeout(timer);
+            activeRequest?.abort();
+
+            if (query.length < 2) {
+                replaceOptions([]);
+                status.textContent = 'Ketik minimal 2 karakter untuk mencari.';
+                return;
+            }
+
+            status.textContent = 'Mencari…';
+            timer = window.setTimeout(async function () {
+                activeRequest = new AbortController();
+                try {
+                    const url = new URL(input.dataset.url, window.location.origin);
+                    url.searchParams.set('q', query);
+                    const response = await fetch(url, {
+                        headers: { Accept: 'application/json' },
+                        credentials: 'same-origin',
+                        signal: activeRequest.signal,
+                    });
+                    if (!response.ok) throw new Error('Pencarian gagal. Coba lagi.');
+
+                    const items = await response.json();
+                    replaceOptions(items);
+                    status.textContent = items.length === 20
+                        ? 'Menampilkan 20 hasil teratas. Persempit pencarian jika belum menemukan pilihan.'
+                        : items.length
+                            ? `${items.length} hasil ditemukan. Pilih hasil pada daftar.`
+                            : 'Tidak ada hasil yang cocok.';
+                } catch (error) {
+                    if (error.name === 'AbortError') return;
+                    status.textContent = 'Pencarian gagal. Coba lagi.';
+                }
+            }, 250);
+        });
+    });
+});
 
 document.addEventListener('DOMContentLoaded', function () {
 

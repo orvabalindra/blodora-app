@@ -34,7 +34,7 @@
                                 <button class="admin-btn-secondary" type="submit"><i class="bi bi-check2-all" aria-hidden="true"></i> Tandai semua dibaca</button>
                             </form>
                         @endif
-                        <form method="POST" action="{{ route('admin.permintaan-notifikasi.destroy-all') }}" onsubmit="return confirm('Hapus semua notifikasi permintaan darah?')">
+                        <form method="POST" action="{{ route('admin.permintaan-notifikasi.destroy-all') }}" data-swal-confirm="Semua notifikasi permintaan darah akan dihapus." data-swal-title="Hapus semua notifikasi?" data-swal-confirm-button="Ya, hapus">
                             @csrf
                             @method('DELETE')
                             <button class="admin-btn-secondary notification-delete-button" type="submit"><i class="bi bi-trash3" aria-hidden="true"></i> Hapus semua</button>

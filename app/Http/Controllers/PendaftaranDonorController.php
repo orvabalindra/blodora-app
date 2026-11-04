@@ -17,6 +17,8 @@ use Illuminate\View\View;
 
 class PendaftaranDonorController extends Controller
 {
+    private const MINIMUM_DONATION_INTERVAL_DAYS = 56;
+
     public function jadwal(Request $request): View
     {
         abort_unless($request->user()->role === 'pendonor', 403);
@@ -75,6 +77,19 @@ class PendaftaranDonorController extends Controller
                 return 'jadwal_tutup';
             }
 
+            $donorTerakhir = RiwayatDonor::query()
+                ->where('pendonor_id', $pendonor->id)
+                ->where('status', 'sukses')
+                ->latest('tanggal_donor')
+                ->first();
+
+            if ($donorTerakhir && $jadwal->tanggal->lt(
+                $donorTerakhir->tanggal_donor->copy()->addDays(self::MINIMUM_DONATION_INTERVAL_DAYS)
+            )) {
+                return 'belum_boleh_donor:'.$donorTerakhir->tanggal_donor
+                    ->copy()->addDays(self::MINIMUM_DONATION_INTERVAL_DAYS)->toDateString();
+            }
+
             $pendaftaran = Pendaftaran::where('pendonor_id', $pendonor->id)
                 ->where('jadwal_donor_id', $jadwal->id)
                 ->first();
@@ -125,7 +140,9 @@ class PendaftaranDonorController extends Controller
             'jadwal_tutup' => back()->withErrors(['jadwal' => 'Jadwal ini sudah lewat.']),
             'sudah_terdaftar' => back()->withErrors(['jadwal' => 'Anda sudah terdaftar pada jadwal ini.']),
             'kuota_penuh' => back()->withErrors(['jadwal' => 'Kuota jadwal sudah penuh.']),
-            default => back()->with('success', 'Pengajuan donor berhasil dikirim dan menunggu persetujuan admin.'),
+            default => str_starts_with($hasil, 'belum_boleh_donor:')
+                ? back()->withErrors(['jadwal' => 'Anda belum dapat mendaftar donor. Jadwal donor berikutnya paling cepat '.\Illuminate\Support\Carbon::parse(substr($hasil, strlen('belum_boleh_donor:')))->translatedFormat('d F Y').'.'])
+                : back()->with('success', 'Pengajuan donor berhasil dikirim dan menunggu persetujuan admin.'),
         };
     }
 
@@ -314,6 +331,22 @@ class PendaftaranDonorController extends Controller
             return back()->withErrors(['screening' => 'Berat badan belum tersedia di profil pendonor. Lengkapi profil sebelum screening.']);
         }
 
+        if ($validated['keputusan'] === 'layak') {
+            $donorTerakhir = RiwayatDonor::query()
+                ->where('pendonor_id', $pendaftaran->pendonor_id)
+                ->where('status', 'sukses')
+                ->latest('tanggal_donor')
+                ->first();
+            $tanggalBolehDonor = $donorTerakhir?->tanggal_donor?->copy()
+                ->addDays(self::MINIMUM_DONATION_INTERVAL_DAYS);
+
+            if ($tanggalBolehDonor && $jadwal->tanggal->lt($tanggalBolehDonor)) {
+                return back()->withErrors([
+                    'screening' => 'Pendonor belum memenuhi jeda minimal 56 hari. Donor berikutnya dapat dilakukan mulai '.$tanggalBolehDonor->translatedFormat('d F Y').'.',
+                ]);
+            }
+        }
+
         $berhasil = DB::transaction(function () use ($validated, $pendaftaran, $request, $beratBadanProfil, $tinggiBadanProfil) {
             $lockedPendaftaran = Pendaftaran::query()
                 ->lockForUpdate()
@@ -411,6 +444,22 @@ class PendaftaranDonorController extends Controller
                 $jadwalDonor = $lockedPendaftaran->jadwalDonor;
                 $pendonor = $lockedPendaftaran->pendonor;
 
+                $donorTerakhir = RiwayatDonor::query()
+                    ->where('pendonor_id', $lockedPendaftaran->pendonor_id)
+                    ->where('status', 'sukses')
+                    ->where(function (Builder $query) use ($lockedPendaftaran): void {
+                        $query->whereNull('pendaftaran_id')
+                            ->orWhere('pendaftaran_id', '!=', $lockedPendaftaran->id);
+                    })
+                    ->latest('tanggal_donor')
+                    ->first();
+                $tanggalBolehDonor = $donorTerakhir?->tanggal_donor?->copy()
+                    ->addDays(self::MINIMUM_DONATION_INTERVAL_DAYS);
+
+                if ($tanggalBolehDonor && $jadwalDonor->tanggal->lt($tanggalBolehDonor)) {
+                    return 'jeda_donor_belum_terpenuhi';
+                }
+
                 if (! $pendonor || ! $pendonor->golongan_darah || ! $pendonor->rhesus) {
                     return 'profil_tidak_lengkap';
                 }
@@ -458,6 +507,10 @@ class PendaftaranDonorController extends Controller
 
         if ($hasil === 'profil_tidak_lengkap') {
             return back()->withErrors(['status' => 'Golongan darah pendonor belum lengkap. Perbarui profil sebelum menambahkan stok.']);
+        }
+
+        if ($hasil === 'jeda_donor_belum_terpenuhi') {
+            return back()->withErrors(['status' => 'Donor tidak dapat diselesaikan karena pendonor belum memenuhi jeda minimal 56 hari dari donor sebelumnya.']);
         }
 
         $this->notifyDonorStatus(

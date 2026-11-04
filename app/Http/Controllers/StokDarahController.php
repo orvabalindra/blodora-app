@@ -44,9 +44,9 @@ class StokDarahController extends Controller
      */
     public function create()
     {
-        $pendonors = Pendonor::orderBy('nama_lengkap')->get();
+        $selectedPendonor = Pendonor::query()->find(old('pendonor_id'));
 
-        return view('stok-darah.create', compact('pendonors'));
+        return view('stok-darah.create', compact('selectedPendonor'));
     }
 
     /**
@@ -125,11 +125,13 @@ class StokDarahController extends Controller
                 ->with('info', 'Batch stok yang terhubung dengan donor atau penyaluran tidak dapat diubah.');
         }
 
-        $pendonors = Pendonor::orderBy('nama_lengkap')->get();
+        $selectedPendonor = old('pendonor_id')
+            ? Pendonor::query()->find(old('pendonor_id'))
+            : $stokDarah->pendonor;
 
         return view(
             'stok-darah.edit',
-            compact('stokDarah', 'pendonors')
+            compact('stokDarah', 'selectedPendonor')
         );
     }
 

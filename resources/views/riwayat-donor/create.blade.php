@@ -132,49 +132,7 @@
                     {{-- PENDONOR --}}
                     <div class="col-12">
 
-                        <div class="admin-form-group">
-
-                            <label
-                                for="pendonor_id"
-                                class="admin-form-label"
-                            >
-                                Pendonor
-                            </label>
-
-                            <select
-                                name="pendonor_id"
-                                id="pendonor_id"
-                                class="admin-form-select @error('pendonor_id') is-invalid @enderror"
-                                required
-                            >
-
-                                <option value="">
-                                    Pilih pendonor
-                                </option>
-
-                                @foreach ($pendonors as $pendonor)
-
-                                    <option
-                                        value="{{ $pendonor->id }}"
-                                        {{ old('pendonor_id') == $pendonor->id ? 'selected' : '' }}
-                                    >
-                                        {{ $pendonor->nama_lengkap }}
-                                        — {{ $pendonor->golongan_darah }}{{ $pendonor->rhesus }}
-                                    </option>
-
-                                @endforeach
-
-                            </select>
-
-                            @error('pendonor_id')
-
-                                <div class="admin-form-error">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-                        </div>
+                        <x-admin.remote-select name="pendonor_id" id="pendonor_id" label="Pendonor" :url="route('admin.lookup.pendonors')" placeholder="Pilih pendonor" :selected-id="old('pendonor_id', $selectedPendonor?->id)" :selected-text="$selectedPendonor ? $selectedPendonor->nama_lengkap.' — '. $selectedPendonor->golongan_darah.$selectedPendonor->rhesus : null" :required="true" />
 
                     </div>
 
@@ -182,50 +140,7 @@
                     {{-- PEMERIKSAAN --}}
                     <div class="col-12">
 
-                        <div class="admin-form-group">
-
-                            <label
-                                for="pemeriksaan_id"
-                                class="admin-form-label"
-                            >
-                                Pemeriksaan
-                            </label>
-
-                            <select
-                                name="pemeriksaan_id"
-                                id="pemeriksaan_id"
-                                class="admin-form-select @error('pemeriksaan_id') is-invalid @enderror"
-                            >
-
-                                <option value="">
-                                    Tidak terkait pemeriksaan
-                                </option>
-
-                                @foreach ($pemeriksaans as $pemeriksaan)
-
-                                    <option
-                                        value="{{ $pemeriksaan->id_pemeriksaan }}"
-                                        {{ old('pemeriksaan_id') == $pemeriksaan->id_pemeriksaan ? 'selected' : '' }}
-                                    >
-                                        —
-                                        {{ $pemeriksaan->pendonor?->nama_lengkap ?? 'Pendonor tidak ditemukan' }}
-                                        —
-                                        {{ $pemeriksaan->hasil }}
-                                    </option>
-
-                                @endforeach
-
-                            </select>
-
-                            @error('pemeriksaan_id')
-
-                                <div class="admin-form-error">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-                        </div>
+                        <x-admin.remote-select name="pemeriksaan_id" id="pemeriksaan_id" label="Pemeriksaan" :url="route('admin.lookup.pemeriksaans')" placeholder="Tidak terkait pemeriksaan" :selected-id="old('pemeriksaan_id', $selectedPemeriksaan?->id_pemeriksaan)" :selected-text="$selectedPemeriksaan ? ($selectedPemeriksaan->pendonor?->nama_lengkap ?? 'Pendonor tidak ditemukan').' — '.ucfirst($selectedPemeriksaan->hasil).' · '.($selectedPemeriksaan->tanggal_pemeriksaan?->format('d-m-Y')) : null" />
 
                     </div>
 

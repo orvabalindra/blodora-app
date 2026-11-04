@@ -16,13 +16,11 @@ class PendonorController extends Controller
 {
     public function create(): View
     {
-        $users = User::query()
-            ->where('role', 'pendonor')
-            ->whereDoesntHave('pendonor')
-            ->orderBy('username')
-            ->get(['id', 'username', 'email']);
+        $selectedUser = old('user_id')
+            ? User::query()->where('role', 'pendonor')->find(old('user_id'))
+            : null;
 
-        return view('pendonor.create', compact('users'));
+        return view('pendonor.create', compact('selectedUser'));
     }
 
     public function store(Request $request): RedirectResponse

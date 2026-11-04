@@ -95,7 +95,7 @@
                                 </td>
                                 <td class="text-end">
                                     @if (in_array($pendaftaran->persetujuan_admin, ['menunggu', 'disetujui'], true) && $pendaftaran->status === 'menunggu_screening' && ! $screeningDimulai)
-                                        <form method="POST" action="{{ route('donor.pendaftaran.destroy', $pendaftaran) }}" onsubmit="return confirm('Batalkan pendaftaran ini?')">
+                                        <form method="POST" action="{{ route('donor.pendaftaran.destroy', $pendaftaran) }}" data-swal-confirm="Pendaftaran donor ini akan dibatalkan." data-swal-title="Batalkan pendaftaran?" data-swal-confirm-button="Ya, batalkan">
                                             @csrf
                                             @method('DELETE')
                                             <button class="donor-btn-secondary" type="submit">Batalkan pengajuan</button>

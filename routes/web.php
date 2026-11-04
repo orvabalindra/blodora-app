@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminLookupController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JadwalDonorController;
@@ -91,6 +92,13 @@ Route::post('/reset-password', [
 */
 
 Route::middleware(['auth', 'admin'])->group(function () {
+
+    Route::get('/admin/lookups/pendonors', [AdminLookupController::class, 'pendonors'])
+        ->name('admin.lookup.pendonors');
+    Route::get('/admin/lookups/available-donor-users', [AdminLookupController::class, 'availableDonorUsers'])
+        ->name('admin.lookup.available-donor-users');
+    Route::get('/admin/lookups/pemeriksaans', [AdminLookupController::class, 'pemeriksaans'])
+        ->name('admin.lookup.pemeriksaans');
 
     /*
     |--------------------------------------------------------------------------

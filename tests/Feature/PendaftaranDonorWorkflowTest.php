@@ -37,6 +37,13 @@ class PendaftaranDonorWorkflowTest extends TestCase
 
         $this->assertSame('menunggu_screening', $pendaftaran->status);
 
+        $this->actingAs($admin)
+            ->put(route('pendaftaran-donor.persetujuan', $pendaftaran), [
+                'keputusan' => 'setujui',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
         $this->travelTo($jadwal->tanggal->copy()->setTime(9, 0));
 
         $this->actingAs($admin)

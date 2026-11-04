@@ -284,7 +284,7 @@
                                             <form
                                                 action="{{ route('permintaan-darah.destroy', $permintaan) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus permintaan darah ini?')"
+                                                data-swal-confirm="Permintaan darah ini akan dihapus." data-swal-title="Hapus permintaan darah?" data-swal-confirm-button="Ya, hapus"
                                             >
                                                 @csrf
                                                 @method('DELETE')

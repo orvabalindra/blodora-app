@@ -36,31 +36,12 @@
                 </div>
             @endif
 
-            @if ($users->isEmpty())
-                <div class="alert alert-info">
-                    Belum ada akun pendonor yang belum memiliki profil. Minta pendonor untuk mendaftar terlebih dahulu.
-                </div>
-            @else
-                <form action="{{ route('pendonor.store') }}" method="POST">
+            <form action="{{ route('pendonor.store') }}" method="POST">
                     @csrf
 
                     <div class="row g-4">
                         <div class="col-12">
-                            <div class="admin-form-group">
-                                <label for="user_id" class="admin-form-label">Akun Pendonor</label>
-                                <select id="user_id" name="user_id"
-                                    class="admin-form-select @error('user_id') is-invalid @enderror" required>
-                                    <option value="">Pilih akun pendonor</option>
-                                    @foreach ($users as $user)
-                                        <option value="{{ $user->id }}" @selected((string) old('user_id') === (string) $user->id)>
-                                            {{ $user->username }} ({{ $user->email }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('user_id')
-                                    <div class="admin-form-error">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            <x-admin.remote-select name="user_id" id="user_id" label="Akun Pendonor" :url="route('admin.lookup.available-donor-users')" placeholder="Pilih akun pendonor" :selected-id="old('user_id', $selectedUser?->id)" :selected-text="$selectedUser ? $selectedUser->username.' ('.$selectedUser->email.')' : null" :required="true" />
                         </div>
 
                         <div class="col-md-6">
@@ -174,8 +155,7 @@
                         <button type="submit" class="btn btn-danger">Simpan Pendonor</button>
                         <a href="{{ route('pendonor.index') }}" class="btn btn-outline-secondary">Batal</a>
                     </div>
-                </form>
-            @endif
+            </form>
         </div>
 
         <div class="admin-footer">

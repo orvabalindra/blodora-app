@@ -128,7 +128,7 @@
                                     </div>
                                 @else
                                     @if ($tersedia > 0)
-                                        <form method="POST" action="{{ route('donor.pendaftaran.store', $jadwalDonor) }}">
+                                        <form method="POST" action="{{ route('donor.pendaftaran.store', $jadwalDonor) }}" data-swal-confirm="Pengajuan akan dikirim kepada admin untuk ditinjau." data-swal-title="Daftar kegiatan donor?" data-swal-confirm-button="Ya, daftar">
                                             @csrf
                                             <button class="donor-btn-primary donor-full-btn" type="submit">Daftar Kegiatan</button>
                                         </form>

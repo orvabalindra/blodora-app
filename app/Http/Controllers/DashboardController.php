@@ -164,7 +164,7 @@ class DashboardController extends Controller
         if (Schema::hasTable('stok__darahs')) {
 
             $jumlahStokKedaluwarsa = DB::table('stok__darahs')
-                ->whereDate('tanggal_kadaluarsa', '<', Carbon::today())
+                ->where('tanggal_kadaluarsa', '<', Carbon::today()->toDateString())
                 ->where('jumlah_kantong', '>', 0)
                 ->sum('jumlah_kantong');
 
@@ -176,16 +176,12 @@ class DashboardController extends Controller
                 ->get(['id_stok_darah', 'golongan_darah', 'rhesus', 'jumlah_kantong', 'tanggal_kadaluarsa']);
 
             $stokRows = DB::table('stok__darahs')
-                ->whereDate(
-                    'tanggal_kadaluarsa',
-                    '>=',
-                    Carbon::today()
-                )
-                ->get([
-                    'golongan_darah',
-                    'rhesus',
-                    'jumlah_kantong',
-                ]);
+                ->where('tanggal_kadaluarsa', '>=', Carbon::today()->toDateString())
+                ->where('jumlah_kantong', '>', 0)
+                ->select('golongan_darah', 'rhesus')
+                ->selectRaw('SUM(jumlah_kantong) as jumlah_kantong')
+                ->groupBy('golongan_darah', 'rhesus')
+                ->get();
 
             foreach ($stokRows as $row) {
 
@@ -195,15 +191,9 @@ class DashboardController extends Controller
 
                 $rhesus = trim($row->rhesus);
 
-                if (
-                    strtolower($rhesus) === 'positif' ||
-                    $rhesus === '+'
-                ) {
+                if (strtolower($rhesus) === 'positif' || $rhesus === '+') {
                     $rhesus = '+';
-                } elseif (
-                    strtolower($rhesus) === 'negatif' ||
-                    $rhesus === '-'
-                ) {
+                } elseif (strtolower($rhesus) === 'negatif' || $rhesus === '-') {
                     $rhesus = '-';
                 }
 

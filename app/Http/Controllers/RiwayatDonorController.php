@@ -46,15 +46,14 @@ class RiwayatDonorController extends Controller
      */
     public function create()
     {
-        $pendonors = Pendonor::orderBy('nama_lengkap')->get();
-
-        $pemeriksaans = Pemeriksaan::with('pendonor')
-            ->latest('id_pemeriksaan')
-            ->get();
+        $selectedPendonor = Pendonor::query()->find(old('pendonor_id'));
+        $selectedPemeriksaan = old('pemeriksaan_id')
+            ? Pemeriksaan::query()->with('pendonor')->find(old('pemeriksaan_id'))
+            : null;
 
         return view('riwayat-donor.create', compact(
-            'pendonors',
-            'pemeriksaans'
+            'selectedPendonor',
+            'selectedPemeriksaan'
         ));
     }
 
@@ -130,18 +129,19 @@ class RiwayatDonorController extends Controller
                 ->with('info', 'Riwayat yang dibuat dari pendaftaran donor tidak dapat diubah.');
         }
 
-        $pendonors = Pendonor::orderBy('nama_lengkap')->get();
-
-        $pemeriksaans = Pemeriksaan::with('pendonor')
-            ->latest('id_pemeriksaan')
-            ->get();
+        $selectedPendonor = old('pendonor_id')
+            ? Pendonor::query()->find(old('pendonor_id'))
+            : $riwayatDonor->pendonor;
+        $selectedPemeriksaan = old('pemeriksaan_id')
+            ? Pemeriksaan::query()->with('pendonor')->find(old('pemeriksaan_id'))
+            : $riwayatDonor->pemeriksaan?->loadMissing('pendonor');
 
         return view(
             'riwayat-donor.edit',
             compact(
                 'riwayatDonor',
-                'pendonors',
-                'pemeriksaans'
+                'selectedPendonor',
+                'selectedPemeriksaan'
             )
         );
     }

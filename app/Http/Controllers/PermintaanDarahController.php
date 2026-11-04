@@ -30,7 +30,7 @@ class PermintaanDarahController extends Controller
                     $query->where('golongan_darah', strtoupper($search))
                         ->orWhere('status', mb_strtolower($search))
                         ->orWhereHas('rumahSakit', function ($rumahSakitQuery) use ($search): void {
-                            $rumahSakitQuery->where('nama_rs', 'like', "{$search}%");
+                            $rumahSakitQuery->where('nama_rs', 'like', "%{$search}%");
                         });
                 });
             })
@@ -129,7 +129,7 @@ class PermintaanDarahController extends Controller
         $stokCocokTersedia = StokDarah::query()
             ->where('golongan_darah', $permintaanDarah->golongan_darah)
             ->where('rhesus', $permintaanDarah->rhesus)
-            ->whereDate('tanggal_kadaluarsa', '>=', today())
+            ->where('tanggal_kadaluarsa', '>=', today()->toDateString())
             ->where('jumlah_kantong', '>', 0)
             ->sum('jumlah_kantong');
 
@@ -271,7 +271,7 @@ class PermintaanDarahController extends Controller
             $stokTersedia = StokDarah::query()
                 ->where('golongan_darah', $lockedPermintaan->golongan_darah)
                 ->where('rhesus', $lockedPermintaan->rhesus)
-                ->whereDate('tanggal_kadaluarsa', '>=', today())
+                ->where('tanggal_kadaluarsa', '>=', today()->toDateString())
                 ->where('jumlah_kantong', '>', 0)
                 ->orderBy('tanggal_kadaluarsa')
                 ->orderBy('id_stok_darah')

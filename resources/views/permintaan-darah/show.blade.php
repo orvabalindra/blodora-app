@@ -347,7 +347,7 @@
 
 
                 @if ($permintaanDarah->status === 'diproses')
-                    <form action="{{ route('permintaan-darah.status', $permintaanDarah) }}" method="POST">
+                    <form action="{{ route('permintaan-darah.status', $permintaanDarah) }}" method="POST" data-swal-confirm="Permintaan akan disetujui. Stok berkurang setelah penyerahan dicatat." data-swal-title="Setujui permintaan darah?" data-swal-icon="question" data-swal-confirm-button="Ya, setujui">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="status" value="diterima">
@@ -359,7 +359,7 @@
                     <form
                         action="{{ route('permintaan-darah.status', $permintaanDarah) }}"
                         method="POST"
-                        onsubmit="return confirm('Tolak permintaan darah ini?')"
+                        data-swal-confirm="Permintaan darah ini akan ditolak." data-swal-title="Tolak permintaan darah?" data-swal-confirm-button="Ya, tolak"
                     >
                         @csrf
                         @method('PATCH')
@@ -372,6 +372,7 @@
                     <form
                         action="{{ route('permintaan-darah.penyaluran', $permintaanDarah) }}"
                         method="POST"
+                        data-swal-confirm="Penyerahan dicatat dan stok akan dikurangi sesuai jumlah kantong." data-swal-title="Catat penyerahan darah?" data-swal-icon="question" data-swal-confirm-button="Ya, catat penyerahan"
                     >
                         @csrf
                         <div class="admin-form-group">
@@ -403,7 +404,7 @@
                     <form
                         action="{{ route('permintaan-darah.destroy', $permintaanDarah) }}"
                         method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus permintaan darah ini?')"
+                        data-swal-confirm="Permintaan darah ini akan dihapus." data-swal-title="Hapus permintaan darah?" data-swal-confirm-button="Ya, hapus"
                     >
                         @csrf
                         @method('DELETE')

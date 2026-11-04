@@ -267,7 +267,7 @@
                                                                     {{-- HAPUS --}}
                                                                     <form action="{{ route('pendonor.destroy', $pendonor->id) }}" method="POST"
                                                                         class="d-inline"
-                                                                        onsubmit="return confirm('Yakin ingin menghapus data pendonor ini?')">
+                                                                        data-swal-confirm="Data pendonor ini akan dihapus." data-swal-title="Hapus data pendonor?" data-swal-confirm-button="Ya, hapus">
                                                                         @csrf
                                                                         @method('DELETE')
                                                                         <button type="submit" class="admin-action-btn delete" title="Hapus">

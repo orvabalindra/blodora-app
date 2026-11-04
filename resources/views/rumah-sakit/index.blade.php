@@ -228,7 +228,7 @@
                                             <form
                                                 action="{{ route('rumah-sakit.destroy', $rumahSakit) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus data Faskes ini?')"
+                                                data-swal-confirm="Data faskes ini akan dihapus." data-swal-title="Hapus data faskes?" data-swal-confirm-button="Ya, hapus"
                                             >
                                                 @csrf
                                                 @method('DELETE')

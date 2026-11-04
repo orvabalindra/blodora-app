@@ -133,49 +133,7 @@
                     {{-- PENDONOR --}}
                     <div class="col-12">
 
-                        <div class="admin-form-group">
-
-                            <label
-                                for="pendonor_id"
-                                class="admin-form-label"
-                            >
-                                Pendonor
-                            </label>
-
-                            <select
-                                name="pendonor_id"
-                                id="pendonor_id"
-                                class="admin-form-select @error('pendonor_id') is-invalid @enderror"
-                                required
-                            >
-
-                                <option value="">
-                                    Pilih pendonor
-                                </option>
-
-                                @foreach ($pendonors as $pendonor)
-
-                                    <option
-                                        value="{{ $pendonor->id }}"
-                                        {{ old('pendonor_id', $pemeriksaan->pendonor_id) == $pendonor->id ? 'selected' : '' }}
-                                    >
-                                        {{ $pendonor->nama_lengkap }}
-                                        — {{ $pendonor->golongan_darah }}{{ $pendonor->rhesus }}
-                                    </option>
-
-                                @endforeach
-
-                            </select>
-
-                            @error('pendonor_id')
-
-                                <div class="admin-form-error">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-                        </div>
+                        <x-admin.remote-select name="pendonor_id" id="pendonor_id" label="Pendonor" :url="route('admin.lookup.pendonors')" placeholder="Pilih pendonor" :selected-id="old('pendonor_id', $selectedPendonor?->id)" :selected-text="$selectedPendonor ? $selectedPendonor->nama_lengkap.' — '. $selectedPendonor->golongan_darah.$selectedPendonor->rhesus : null" :required="true" />
 
                     </div>
 
@@ -192,7 +150,7 @@
                                 Tanggal Pemeriksaan
                             </label>
 
-                            <x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan', optional($pemeriksaan->tanggal_pemeriksaan)->format('Y-m-d'))" />
+                            <x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan', optional($pemeriksaan->tanggal_pemeriksaan)->format('Y-m-d'))" :today-shortcut="true" />
 
                             @error('tanggal_pemeriksaan')
 

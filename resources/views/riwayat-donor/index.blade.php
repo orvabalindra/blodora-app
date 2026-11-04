@@ -261,7 +261,7 @@
                                             <form
                                                 action="{{ route('riwayat-donor.destroy', $riwayat) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus riwayat donor ini?')"
+                                                data-swal-confirm="Riwayat donor ini akan dihapus." data-swal-title="Hapus riwayat donor?" data-swal-confirm-button="Ya, hapus"
                                             >
                                                 @csrf
                                                 @method('DELETE')

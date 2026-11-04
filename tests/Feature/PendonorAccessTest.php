@@ -21,8 +21,15 @@ class PendonorAccessTest extends TestCase
         $this->actingAs($admin)
             ->get(route('pendonor.create'))
             ->assertOk()
-            ->assertSee($donorUser->username)
+            ->assertSee('Cari akun pendonor')
+            ->assertSee(route('admin.lookup.available-donor-users'))
             ->assertSee(route('pendonor.store'));
+
+        $this->getJson(route('admin.lookup.available-donor-users', [
+            'q' => 'donor-no',
+        ]))
+            ->assertOk()
+            ->assertJsonPath('0.id', $donorUser->id);
 
         $response = $this->post(route('pendonor.store'), [
             'user_id' => $donorUser->id,

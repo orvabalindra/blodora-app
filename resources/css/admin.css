@@ -306,6 +306,121 @@
     }
 }
 
+.admin-registration-search-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-registration-search-box {
+    display: flex;
+    flex: 1 1 520px;
+    min-width: 0;
+    height: 54px;
+    overflow: hidden;
+    border: 1px solid #d5d8de;
+    border-radius: 28px;
+    background: #fff;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.admin-registration-search-box:focus-within {
+    border-color: #9299a3;
+    box-shadow: 0 0 0 2px rgba(30, 30, 30, .08);
+}
+
+.admin-registration-filters .admin-registration-search-box .form-control {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.admin-registration-search-submit {
+    flex: 0 0 64px;
+    border: 0;
+    border-left: 1px solid #e4e6eb;
+    background: #f5f6f8;
+    color: #25282d;
+    font-size: 18px;
+    transition: background .15s ease;
+}
+
+.admin-registration-search-submit:hover {
+    background: #e9ebef;
+}
+
+.admin-registration-filter-box {
+    display: flex;
+    flex: 0 0 230px;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid #d5d8de;
+    border-radius: 24px;
+    background: #fff;
+    color: #555b64;
+}
+
+.admin-registration-filter-box > i {
+    flex: 0 0 auto;
+}
+
+.admin-registration-filters .admin-registration-filter-box .form-select {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    padding-left: 0;
+    border: 0;
+    background-color: transparent;
+    box-shadow: none;
+    white-space: nowrap;
+}
+
+.admin-registration-search-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    height: 30px;
+    padding: 0 0 0 11px;
+    border-left: 1px solid #e1e4e8;
+    color: #5d626b;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.admin-registration-search-clear:hover {
+    color: #1e2024;
+    text-decoration: underline;
+}
+
+@media (max-width: 767.98px) {
+    .admin-registration-search-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+    }
+
+    .admin-registration-search-box {
+        grid-column: 1 / -1;
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .admin-registration-filter-box {
+        grid-column: 1 / -1;
+        width: 100%;
+        flex-basis: auto;
+    }
+}
+
 .admin-menu-title {
     padding: 0 12px;
     margin: 0 0 10px;

@@ -11,24 +11,29 @@
         @if ($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
 
         <form method="GET" action="{{ route('pendaftaran-donor.admin.index') }}" class="admin-registration-filters mb-3">
-            <div class="input-group">
+            <div class="admin-registration-search-row">
+                <div class="admin-registration-search-box">
                 <label class="visually-hidden" for="pendaftaran-search">Cari pendaftar</label>
-                <input id="pendaftaran-search" class="form-control" type="search" name="q" value="{{ $q }}" placeholder="Cari nama, kegiatan, lokasi, atau status">
+                <input id="pendaftaran-search" class="form-control" type="search" name="q" value="{{ $q }}" placeholder="Cari nama, kegiatan, atau lokasi">
+                <button type="submit" class="admin-registration-search-submit" aria-label="Cari pendaftaran" title="Cari"><i class="bi bi-search" aria-hidden="true"></i></button>
+                </div>
+                <div class="admin-registration-filter-box">
                 <label class="visually-hidden" for="pendaftaran-status">Filter status</label>
-                <select id="pendaftaran-status" class="form-select" name="status" aria-label="Filter status pendaftaran">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                <select id="pendaftaran-status" class="form-select" name="status" aria-label="Filter status pendaftaran" onchange="this.form.requestSubmit()">
                     <option value="">Semua status</option>
-                    <option value="menunggu_screening" @selected($status === 'menunggu_screening')>Terdaftar / proses screening</option>
+                        <option value="menunggu_screening" @selected($status === 'menunggu_screening')>Terdaftar</option>
                     <option value="ditunda" @selected($status === 'ditunda')>Ditunda</option>
                     <option value="proses_donor" @selected($status === 'proses_donor')>Lolos screening</option>
-                    <option value="selesai" @selected($status === 'selesai')>Donor selesai</option>
+                        <option value="selesai" @selected($status === 'selesai')>Selesai</option>
                     <option value="gagal_screening" @selected($status === 'gagal_screening')>Tidak layak</option>
                     <option value="tidak_hadir" @selected($status === 'tidak_hadir')>Tidak hadir</option>
                     <option value="dibatalkan" @selected($status === 'dibatalkan')>Dibatalkan</option>
                 </select>
-                <button type="submit" class="btn btn-danger">Cari / Filter</button>
-                @if ($q !== '' || $status !== '')
-                    <a class="btn btn-outline-secondary" href="{{ $status !== '' ? route('pendaftaran-donor.admin.index', ['status' => $status]) : route('pendaftaran-donor.admin.index') }}" aria-label="Hapus pencarian" title="Hapus pencarian"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
-                @endif
+                    @if ($q !== '' || $status !== '')
+                        <a class="admin-registration-search-clear" href="{{ route('pendaftaran-donor.admin.index') }}" aria-label="Hapus pencarian dan filter" title="Hapus pencarian dan filter"><i class="bi bi-x-lg" aria-hidden="true"></i><span>Reset</span></a>
+                    @endif
+                </div>
             </div>
             <small class="text-muted">{{ $pendaftarans->total() }} pendaftaran ditemukan</small>
         </form>
@@ -83,13 +88,13 @@
                         <strong>Pengajuan menunggu keputusan.</strong> Setujui agar pendonor dapat mengikuti screening pada hari kegiatan, atau tolak dengan menyertakan alasan.
                     </div>
                     <div class="d-flex flex-wrap align-items-end gap-2 mb-3">
-                        <form method="POST" action="{{ route('pendaftaran-donor.persetujuan', $pendaftaran) }}">
+                        <form method="POST" action="{{ route('pendaftaran-donor.persetujuan', $pendaftaran) }}" data-swal-confirm="Pengajuan donor ini akan disetujui." data-swal-title="Setujui pengajuan donor?" data-swal-icon="question" data-swal-confirm-button="Ya, setujui">
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="keputusan" value="setujui">
                             <button class="admin-btn-primary" type="submit">Setujui pengajuan</button>
                         </form>
-                        <form method="POST" action="{{ route('pendaftaran-donor.persetujuan', $pendaftaran) }}" class="flex-grow-1">
+                        <form method="POST" action="{{ route('pendaftaran-donor.persetujuan', $pendaftaran) }}" class="flex-grow-1" data-swal-confirm="Pengajuan donor ini akan ditolak." data-swal-title="Tolak pengajuan donor?" data-swal-icon="warning" data-swal-confirm-button="Ya, tolak">
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="keputusan" value="tolak">
@@ -121,7 +126,7 @@
                 @if ($pendaftaran->persetujuan_admin === 'disetujui' && in_array($pendaftaran->status, ['menunggu_screening', 'ditunda'], true) && ($pendaftaran->status === 'ditunda' || $screeningDimulai))
                     <details class="mt-2">
                     <summary>Isi hasil screening</summary>
-                    <form method="POST" action="{{ route('pendaftaran-donor.screening', $pendaftaran) }}" class="mt-3">
+                    <form method="POST" action="{{ route('pendaftaran-donor.screening', $pendaftaran) }}" class="mt-3" data-swal-confirm="Hasil pemeriksaan kesehatan akan disimpan dan status pendaftaran diperbarui." data-swal-title="Simpan hasil pemeriksaan kesehatan?" data-swal-icon="question" data-swal-confirm-button="Ya, simpan">
                         @csrf
                         @method('PUT')
                         <div class="admin-screening-form-grid">
@@ -134,7 +139,7 @@
                                     <option value="ditunda">Tunda dan evaluasi kembali</option>
                                 </select>
                             </div>
-                            <div class="admin-screening-field admin-screening-field-wide"><label class="form-label d-block">Tanggal pemeriksaan</label><x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan')" :required="false" /></div>
+                            <div class="admin-screening-field admin-screening-field-wide"><label class="form-label d-block">Tanggal pemeriksaan</label><x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan')" :required="false" :today-shortcut="true" :id-prefix="'screening-'.$pendaftaran->id" /></div>
                             <div class="admin-screening-field"><label class="form-label" for="tekanan-{{ $pendaftaran->id }}">Tekanan darah</label><input class="form-control" id="tekanan-{{ $pendaftaran->id }}" name="tekanan_darah" placeholder="Contoh: 120/80"></div>
                             <div class="admin-screening-field"><label class="form-label" for="hb-{{ $pendaftaran->id }}">Hemoglobin (g/dL)</label><input class="form-control" type="number" min="0" max="30" step="0.1" id="hb-{{ $pendaftaran->id }}" name="hemoglobin"></div>
                             <div class="admin-screening-field admin-screening-field-wide"><label class="form-label" for="catatan-{{ $pendaftaran->id }}">Catatan petugas (rahasia)</label><textarea class="form-control" id="catatan-{{ $pendaftaran->id }}" name="catatan" rows="2">{{ old('catatan') }}</textarea></div>
@@ -148,7 +153,7 @@
                         <details class="mt-2">
                         <summary>Catat hasil donor dan penambahan stok</summary>
                         <p class="small text-muted mt-2">Screening dinyatakan layak. Masukkan jumlah kantong untuk menyelesaikan donor dan menambahkannya ke stok.</p>
-                        <form method="POST" action="{{ route('pendaftaran-donor.status', $pendaftaran) }}" class="admin-donation-completion-form">
+                        <form method="POST" action="{{ route('pendaftaran-donor.status', $pendaftaran) }}" class="admin-donation-completion-form" data-swal-confirm="Riwayat donor akan dibuat dan jumlah kantong ditambahkan ke stok." data-swal-title="Selesaikan donor?" data-swal-icon="question" data-swal-confirm-button="Ya, selesaikan">
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="selesai">
@@ -162,7 +167,7 @@
                             </div>
                             <button class="admin-btn-primary" type="submit">Selesaikan donor dan tambah stok</button>
                         </form>
-                        <form method="POST" action="{{ route('pendaftaran-donor.status', $pendaftaran) }}" class="admin-donation-absence-form">
+                        <form method="POST" action="{{ route('pendaftaran-donor.status', $pendaftaran) }}" class="admin-donation-absence-form" data-swal-confirm="Pendaftar ini akan ditandai tidak hadir." data-swal-title="Tandai tidak hadir?" data-swal-confirm-button="Ya, tandai">
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="tidak_hadir">
