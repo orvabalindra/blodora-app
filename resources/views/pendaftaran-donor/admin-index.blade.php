@@ -139,7 +139,7 @@
                                     <option value="ditunda">Tunda dan evaluasi kembali</option>
                                 </select>
                             </div>
-                            <div class="admin-screening-field admin-screening-field-wide"><label class="form-label d-block">Tanggal pemeriksaan</label><x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan')" :required="false" :today-shortcut="true" :id-prefix="'screening-'.$pendaftaran->id" /></div>
+                            <div class="admin-screening-field admin-screening-field-wide"><label class="form-label d-block" for="screening-{{ $pendaftaran->id }}_tanggal_pemeriksaan">Tanggal pemeriksaan</label><x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan')" :required="false" :max-date="today()->format('Y-m-d')" :id-prefix="'screening-'.$pendaftaran->id" /></div>
                             <div class="admin-screening-field"><label class="form-label" for="tekanan-{{ $pendaftaran->id }}">Tekanan darah</label><input class="form-control" id="tekanan-{{ $pendaftaran->id }}" name="tekanan_darah" placeholder="Contoh: 120/80"></div>
                             <div class="admin-screening-field"><label class="form-label" for="hb-{{ $pendaftaran->id }}">Hemoglobin (g/dL)</label><input class="form-control" type="number" min="0" max="30" step="0.1" id="hb-{{ $pendaftaran->id }}" name="hemoglobin"></div>
                             <div class="admin-screening-field admin-screening-field-wide"><label class="form-label" for="catatan-{{ $pendaftaran->id }}">Catatan petugas (rahasia)</label><textarea class="form-control" id="catatan-{{ $pendaftaran->id }}" name="catatan" rows="2">{{ old('catatan') }}</textarea></div>
@@ -152,8 +152,8 @@
                     @if (now()->greaterThanOrEqualTo($waktuSelesai))
                         <details class="mt-2">
                         <summary>Catat hasil donor dan penambahan stok</summary>
-                        <p class="small text-muted mt-2">Screening dinyatakan layak. Masukkan jumlah kantong untuk menyelesaikan donor dan menambahkannya ke stok.</p>
-                        <form method="POST" action="{{ route('pendaftaran-donor.status', $pendaftaran) }}" class="admin-donation-completion-form" data-swal-confirm="Riwayat donor akan dibuat dan jumlah kantong ditambahkan ke stok." data-swal-title="Selesaikan donor?" data-swal-icon="question" data-swal-confirm-button="Ya, selesaikan">
+                        <p class="small text-muted mt-2">Screening dinyatakan layak. Masukkan jumlah kantong, lalu cocokkan golongan darah dengan catatan donor sebelum stok ditambahkan.</p>
+                        <form method="POST" action="{{ route('pendaftaran-donor.status', $pendaftaran) }}" class="admin-donation-completion-form" data-swal-confirm="Pastikan golongan darah dan rhesus sudah dicocokkan dengan catatan donor. Riwayat donor dan stok akan dicatat sesuai data yang dikonfirmasi." data-swal-title="Selesaikan donor?" data-swal-icon="question" data-swal-confirm-button="Ya, selesaikan">
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="selesai">
@@ -161,9 +161,37 @@
                                 <label class="form-label" for="jumlah-{{ $pendaftaran->id }}">Jumlah kantong terkumpul</label>
                                 <input class="form-control" id="jumlah-{{ $pendaftaran->id }}" type="number" name="jumlah_donor" min="1" required>
                             </div>
+                            <fieldset class="admin-donation-blood-confirmation">
+                                <legend class="form-label">Konfirmasi golongan darah dan rhesus</legend>
+                                <p class="small text-muted">Nilai profil ditampilkan sebagai awal. Cocokkan dengan catatan donor; stok memakai nilai yang dipilih di sini.</p>
+                                <div class="admin-donation-blood-fields">
+                                    <div>
+                                        <label class="form-label" for="golongan-{{ $pendaftaran->id }}">Golongan darah</label>
+                                        <select class="form-select" id="golongan-{{ $pendaftaran->id }}" name="golongan_darah" required>
+                                            <option value="">Pilih golongan</option>
+                                            @foreach (['A', 'B', 'AB', 'O'] as $golongan)
+                                                <option value="{{ $golongan }}" @selected(old('golongan_darah', $pendaftaran->pendonor?->golongan_darah) === $golongan)>{{ $golongan }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="rhesus-{{ $pendaftaran->id }}">Rhesus</label>
+                                        <select class="form-select" id="rhesus-{{ $pendaftaran->id }}" name="rhesus" required>
+                                            <option value="">Pilih rhesus</option>
+                                            @foreach (['+' => 'Positif (+)', '-' => 'Negatif (-)'] as $rhesus => $labelRhesus)
+                                                <option value="{{ $rhesus }}" @selected(old('rhesus', $pendaftaran->pendonor?->rhesus) === $rhesus)>{{ $labelRhesus }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <label class="admin-donation-blood-attestation">
+                                    <input type="checkbox" name="konfirmasi_golongan_darah" value="1" @checked(old('konfirmasi_golongan_darah')) required>
+                                    <span>Saya sudah mencocokkan golongan darah dan rhesus dengan catatan donor.</span>
+                                </label>
+                            </fieldset>
                             <div class="admin-donation-expiry">
-                                <label class="form-label d-block">Tanggal kedaluwarsa stok</label>
-                                <x-admin-date-parts name="tanggal_kadaluarsa" :value="old('tanggal_kadaluarsa')" />
+                                <label class="form-label d-block" for="expiry-{{ $pendaftaran->id }}_tanggal_kadaluarsa">Tanggal kedaluwarsa stok</label>
+                                <x-admin-date-parts name="tanggal_kadaluarsa" :value="old('tanggal_kadaluarsa')" :min-date="today()->format('Y-m-d')" :id-prefix="'expiry-'.$pendaftaran->id" />
                             </div>
                             <button class="admin-btn-primary" type="submit">Selesaikan donor dan tambah stok</button>
                         </form>

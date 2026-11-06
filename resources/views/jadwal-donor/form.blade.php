@@ -44,8 +44,8 @@
             </div>
             <div class="col-md-6">
                 <div class="admin-form-group">
-                    <label class="admin-form-label d-block">Tanggal kegiatan</label>
-                    <x-admin-date-parts name="tanggal" :value="$tanggalJadwalForm" :min-year="now()->year" />
+                    <label class="admin-form-label d-block" for="tanggal">Tanggal kegiatan</label>
+                    <x-admin-date-parts name="tanggal" :value="$tanggalJadwalForm" :min-year="now()->year" :min-date="today()->format('Y-m-d')" />
                     @error('tanggal')<div class="admin-form-error">{{ $message }}</div>@enderror
                 </div>
             </div>

@@ -17,7 +17,19 @@ class AdminMiddleware
         }
 
         if (auth()->user()->role !== 'admin') {
-            return redirect()->route('dashboard.pendonor');
+            $user = $request->user();
+
+            if ($user->role === 'pendonor') {
+                return $user->pendonor
+                    ? redirect()->route('dashboard.pendonor')
+                    : redirect()->route('pendonor.profile.create');
+            }
+
+            if ($user->role === 'rumah_sakit' && $user->rumahSakit) {
+                return redirect()->route('faskes.permintaan.index');
+            }
+
+            return redirect()->route('home');
         }
 
         return $next($request);

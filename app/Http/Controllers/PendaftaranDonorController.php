@@ -406,6 +406,9 @@ class PendaftaranDonorController extends Controller
         $validated = $request->validate([
             'status' => ['required', Rule::in(['selesai', 'tidak_hadir'])],
             'jumlah_donor' => ['required_if:status,selesai', 'nullable', 'integer', 'min:1'],
+            'golongan_darah' => ['required_if:status,selesai', 'nullable', Rule::in(['A', 'B', 'AB', 'O'])],
+            'rhesus' => ['required_if:status,selesai', 'nullable', Rule::in(['+', '-'])],
+            'konfirmasi_golongan_darah' => ['accepted_if:status,selesai'],
             'tanggal_kadaluarsa' => [
                 'required_if:status,selesai',
                 'nullable',
@@ -413,6 +416,10 @@ class PendaftaranDonorController extends Controller
                 'after_or_equal:today',
                 'after_or_equal:'.$pendaftaran->jadwalDonor->tanggal->toDateString(),
             ],
+        ], [
+            'golongan_darah.required_if' => 'Pilih golongan darah yang sudah dicocokkan dengan catatan donor.',
+            'rhesus.required_if' => 'Pilih rhesus yang sudah dicocokkan dengan catatan donor.',
+            'konfirmasi_golongan_darah.accepted_if' => 'Konfirmasi kecocokan golongan darah dan rhesus sebelum menyelesaikan donor.',
         ]);
 
         if ($pendaftaran->status !== 'proses_donor') {
@@ -427,7 +434,9 @@ class PendaftaranDonorController extends Controller
             return back()->withErrors(['status' => 'Hasil kehadiran hanya dapat dicatat setelah jadwal donor selesai.']);
         }
 
-        $hasil = DB::transaction(function () use ($pendaftaran, $validated) {
+        $petugasId = (int) $request->user()->getAuthIdentifier();
+
+        $hasil = DB::transaction(function () use ($pendaftaran, $validated, $petugasId) {
             $lockedPendaftaran = Pendaftaran::query()
                 ->lockForUpdate()
                 ->findOrFail($pendaftaran->getKey());
@@ -460,7 +469,7 @@ class PendaftaranDonorController extends Controller
                     return 'jeda_donor_belum_terpenuhi';
                 }
 
-                if (! $pendonor || ! $pendonor->golongan_darah || ! $pendonor->rhesus) {
+                if (! $pendonor) {
                     return 'profil_tidak_lengkap';
                 }
 
@@ -477,8 +486,10 @@ class PendaftaranDonorController extends Controller
                     'pendonor_id' => $pendonor->id,
                     'pendaftaran_id' => $lockedPendaftaran->id,
                     'lokasi' => $jadwalDonor->lokasi,
-                    'golongan_darah' => $pendonor->golongan_darah,
-                    'rhesus' => $pendonor->rhesus,
+                    'golongan_darah' => $validated['golongan_darah'],
+                    'rhesus' => $validated['rhesus'],
+                    'golongan_darah_dikonfirmasi_oleh' => $petugasId,
+                    'golongan_darah_dikonfirmasi_pada' => now(),
                     'jumlah_kantong' => $validated['jumlah_donor'],
                     'tanggal_masuk' => $jadwalDonor->tanggal,
                     'tanggal_kadaluarsa' => $validated['tanggal_kadaluarsa'],
@@ -492,7 +503,7 @@ class PendaftaranDonorController extends Controller
                 return [
                     'status' => 'selesai',
                     'jumlah' => (int) $validated['jumlah_donor'],
-                    'golongan' => $pendonor->golongan_darah.$pendonor->rhesus,
+                    'golongan' => $validated['golongan_darah'].$validated['rhesus'],
                 ];
             } else {
                 $lockedPendaftaran->update(['status' => $validated['status']]);

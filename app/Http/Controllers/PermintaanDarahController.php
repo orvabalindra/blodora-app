@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\PermintaanDarah;
 use App\Models\PermintaanDarahPenyaluran;
-use App\Models\RumahSakit;
 use App\Models\StokDarah;
 use App\Models\User;
 use App\Notifications\PermintaanDarahStatusNotification;
@@ -29,11 +28,13 @@ class PermintaanDarahController extends Controller
                 $query->where(function ($query) use ($search): void {
                     $query->where('golongan_darah', strtoupper($search))
                         ->orWhere('status', mb_strtolower($search))
+                            ->orWhere('tingkat_kebutuhan', mb_strtolower($search))
                         ->orWhereHas('rumahSakit', function ($rumahSakitQuery) use ($search): void {
                             $rumahSakitQuery->where('nama_rs', 'like', "%{$search}%");
                         });
                 });
             })
+            ->orderByRaw("CASE tingkat_kebutuhan WHEN 'darurat' THEN 0 WHEN 'mendesak' THEN 1 ELSE 2 END")
             ->latest('id_permintaan_darah')
             ->paginate(15)
             ->withQueryString();
@@ -41,11 +42,69 @@ class PermintaanDarahController extends Controller
         return view('permintaan-darah.index', compact('permintaanDarahs'));
     }
 
-    public function create(): View
+    public function hospitalIndex(Request $request): View
     {
-        $rumahSakits = RumahSakit::orderBy('nama_rs')->get();
+        $rumahSakit = $request->user()->rumahSakit;
+        $request->validate(['q' => ['nullable', 'string', 'max:100']]);
+        $search = trim((string) $request->query('q', ''));
 
-        return view('permintaan-darah.create', compact('rumahSakits'));
+        $permintaanDarahs = $rumahSakit->permintaanDarah()
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('golongan_darah', strtoupper($search))
+                        ->orWhere('status', mb_strtolower($search))
+                        ->orWhere('tingkat_kebutuhan', mb_strtolower($search));
+                });
+            })
+            ->orderByRaw("CASE tingkat_kebutuhan WHEN 'darurat' THEN 0 WHEN 'mendesak' THEN 1 ELSE 2 END")
+            ->latest('id_permintaan_darah')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('permintaan-darah.hospital-index', compact('rumahSakit', 'permintaanDarahs'));
+    }
+
+    public function hospitalCreate(Request $request): View
+    {
+        return view('permintaan-darah.hospital-create', [
+            'rumahSakit' => $request->user()->rumahSakit,
+        ]);
+    }
+
+    public function hospitalStore(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'golongan_darah' => ['required', 'in:A,B,AB,O'],
+            'rhesus' => ['required', 'in:+,-'],
+            'jumlah_minta' => ['required', 'integer', 'min:1'],
+            'tingkat_kebutuhan' => ['required', 'in:darurat,mendesak,normal'],
+        ]);
+
+        $rumahSakit = $request->user()->rumahSakit;
+        $permintaanDarah = $rumahSakit->permintaanDarah()->create($validated + [
+            'tanggal_permintaan' => today(),
+            'jumlah_terpenuhi' => 0,
+            'status' => 'diproses',
+        ]);
+
+        $this->notifyAdmins(
+            $permintaanDarah,
+            $validated['tingkat_kebutuhan'] === 'darurat' ? 'Permintaan darah darurat' : 'Permintaan darah baru',
+            'Permintaan '.$permintaanDarah->golongan_darah.$permintaanDarah->rhesus.' sebanyak '.$permintaanDarah->jumlah_minta.' kantong dari '.$rumahSakit->nama_rs.' dengan tingkat kebutuhan '.$this->priorityLabel($permintaanDarah->tingkat_kebutuhan).' menunggu keputusan.',
+        );
+
+        return redirect()
+            ->route('faskes.permintaan.index')
+            ->with('success', 'Permintaan darah berhasil dikirim kepada admin.');
+    }
+
+    public function hospitalShow(Request $request, PermintaanDarah $permintaanDarah): View
+    {
+        abort_unless((int) $permintaanDarah->rumah_sakit_id === (int) $request->user()->rumahSakit->id_rs, 404);
+
+        $permintaanDarah->load('penyalurans.stokDarah');
+
+        return view('permintaan-darah.hospital-show', compact('permintaanDarah'));
     }
 
     public function notifikasi(Request $request): View
@@ -90,34 +149,6 @@ class PermintaanDarahController extends Controller
         return back()->with('success', 'Semua notifikasi permintaan darah berhasil dihapus.');
     }
 
-    public function store(Request $request): RedirectResponse
-    {
-        $this->mergeDateParts($request);
-        $validated = $request->validate([
-            'rumah_sakit_id' => ['required', 'exists:rumah_sakits,id_rs'],
-            'tanggal_permintaan' => ['required', 'date'],
-            'golongan_darah' => ['required', 'in:A,B,AB,O'],
-            'rhesus' => ['required', 'in:+,-'],
-            'jumlah_minta' => ['required', 'integer', 'min:1'],
-        ]);
-
-        $permintaanDarah = PermintaanDarah::create($validated + [
-            'jumlah_terpenuhi' => 0,
-            'status' => 'diproses',
-        ]);
-
-        $permintaanDarah->load('rumahSakit');
-        $this->notifyAdmins(
-            $permintaanDarah,
-            'Permintaan darah baru',
-            'Permintaan '.$permintaanDarah->golongan_darah.$permintaanDarah->rhesus.' sebanyak '.$permintaanDarah->jumlah_minta.' kantong dari '.($permintaanDarah->rumahSakit?->nama_rs ?? 'rumah sakit').' menunggu keputusan.',
-        );
-
-        return redirect()
-            ->route('permintaan-darah.index')
-            ->with('success', 'Permintaan darah berhasil ditambahkan.');
-    }
-
     public function show(PermintaanDarah $permintaanDarah): View
     {
         $permintaanDarah->load([
@@ -126,70 +157,11 @@ class PermintaanDarahController extends Controller
             'penyalurans.diserahkanOleh',
         ]);
 
-        $stokCocokTersedia = StokDarah::query()
-            ->where('golongan_darah', $permintaanDarah->golongan_darah)
-            ->where('rhesus', $permintaanDarah->rhesus)
-            ->where('tanggal_kadaluarsa', '>=', today()->toDateString())
-            ->where('jumlah_kantong', '>', 0)
-            ->sum('jumlah_kantong');
+        $stokCocokTersedia = $this->stokCocokTersedia($permintaanDarah);
 
         $sisaPermintaan = max(0, $permintaanDarah->jumlah_minta - $permintaanDarah->jumlah_terpenuhi);
 
         return view('permintaan-darah.show', compact('permintaanDarah', 'stokCocokTersedia', 'sisaPermintaan'));
-    }
-
-    public function edit(PermintaanDarah $permintaanDarah): View|RedirectResponse
-    {
-        if ($permintaanDarah->status !== 'diproses' || $permintaanDarah->jumlah_terpenuhi > 0) {
-            return redirect()
-                ->route('permintaan-darah.show', $permintaanDarah)
-                ->with('info', 'Permintaan yang sudah diputuskan tidak dapat diubah.');
-        }
-
-        $rumahSakits = RumahSakit::orderBy('nama_rs')->get();
-
-        return view(
-            'permintaan-darah.edit',
-            compact('permintaanDarah', 'rumahSakits')
-        );
-    }
-
-    public function update(
-        Request $request,
-        PermintaanDarah $permintaanDarah
-    ): RedirectResponse {
-        $this->mergeDateParts($request);
-        $validated = $request->validate([
-            'rumah_sakit_id' => ['required', 'exists:rumah_sakits,id_rs'],
-            'tanggal_permintaan' => ['required', 'date'],
-            'golongan_darah' => ['required', 'in:A,B,AB,O'],
-            'rhesus' => ['required', 'in:+,-'],
-            'jumlah_minta' => ['required', 'integer', 'min:1'],
-        ]);
-
-        $updated = DB::transaction(function () use ($permintaanDarah, $validated): bool {
-            $lockedPermintaan = PermintaanDarah::query()
-                ->lockForUpdate()
-                ->findOrFail($permintaanDarah->getKey());
-
-            if ($lockedPermintaan->status !== 'diproses' || $lockedPermintaan->jumlah_terpenuhi > 0) {
-                return false;
-            }
-
-            $lockedPermintaan->update($validated);
-
-            return true;
-        });
-
-        if (! $updated) {
-            return back()->withErrors([
-                'permintaan' => 'Permintaan yang sudah diputuskan tidak dapat diubah.',
-            ]);
-        }
-
-        return redirect()
-            ->route('permintaan-darah.show', $permintaanDarah)
-            ->with('success', 'Permintaan darah berhasil diperbarui.');
     }
 
     public function updateStatus(
@@ -224,6 +196,19 @@ class PermintaanDarahController extends Controller
             ? 'Permintaan disetujui. Stok akan berkurang setelah penyerahan dicatat.'
             : 'Permintaan berhasil ditolak.';
 
+        $warning = null;
+        if ($validated['status'] === 'diterima') {
+            $permintaanDarah->refresh();
+            $sisaPermintaan = max(0, $permintaanDarah->jumlah_minta - $permintaanDarah->jumlah_terpenuhi);
+            $stokTersedia = $this->stokCocokTersedia($permintaanDarah);
+
+            if ($sisaPermintaan > $stokTersedia) {
+                $warning = 'Permintaan disetujui, tetapi stok '.$permintaanDarah->golongan_darah.$permintaanDarah->rhesus
+                    .' belum mencukupi: tersedia '.$stokTersedia.' kantong, sementara masih dibutuhkan '.$sisaPermintaan
+                    .' kantong. Hubungi rumah sakit melalui nomor telepon pada detail permintaan.';
+            }
+        }
+
         $permintaanDarah->load('rumahSakit');
         $this->notifyAdmins(
             $permintaanDarah,
@@ -231,9 +216,11 @@ class PermintaanDarahController extends Controller
             'Permintaan dari '.($permintaanDarah->rumahSakit?->nama_rs ?? 'rumah sakit').' untuk '.$permintaanDarah->golongan_darah.$permintaanDarah->rhesus.' berstatus '.$validated['status'].'.',
         );
 
-        return redirect()
-            ->route('permintaan-darah.show', $permintaanDarah)
-            ->with('success', $message);
+        $redirect = redirect()->route('permintaan-darah.show', $permintaanDarah);
+
+        return $warning
+            ? $redirect->with('warning', $warning)
+            : $redirect->with('success', $message);
     }
 
     public function storePenyaluran(
@@ -377,5 +364,24 @@ class PermintaanDarahController extends Controller
                 (int) $permintaanDarah->getKey(),
             )),
         );
+    }
+
+    private function priorityLabel(string $priority): string
+    {
+        return match ($priority) {
+            'darurat' => 'darurat / urgent',
+            'mendesak' => 'mendesak',
+            default => 'terencana',
+        };
+    }
+
+    private function stokCocokTersedia(PermintaanDarah $permintaanDarah): int
+    {
+        return (int) StokDarah::query()
+            ->where('golongan_darah', $permintaanDarah->golongan_darah)
+            ->where('rhesus', $permintaanDarah->rhesus)
+            ->where('tanggal_kadaluarsa', '>=', today()->toDateString())
+            ->where('jumlah_kantong', '>', 0)
+            ->sum('jumlah_kantong');
     }
 }

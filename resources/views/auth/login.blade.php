@@ -60,6 +60,7 @@
             action="{{ route('login.process') }}"
             method="POST"
             class="auth-form"
+            data-swal-no-confirm="true"
         >
 
             @csrf

@@ -83,6 +83,10 @@ class AuthController extends Controller
                 return redirect()->route('dashboard.pendonor');
             }
 
+            if ($user->role === 'rumah_sakit' && $user->rumahSakit) {
+                return redirect()->route('faskes.permintaan.index');
+            }
+
             // =========================
             // ROLE TIDAK DIKENAL
             // =========================

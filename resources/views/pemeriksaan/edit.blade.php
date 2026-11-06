@@ -150,7 +150,7 @@
                                 Tanggal Pemeriksaan
                             </label>
 
-                            <x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan', optional($pemeriksaan->tanggal_pemeriksaan)->format('Y-m-d'))" :today-shortcut="true" />
+                            <x-admin-date-parts name="tanggal_pemeriksaan" :value="old('tanggal_pemeriksaan', optional($pemeriksaan->tanggal_pemeriksaan)->format('Y-m-d'))" :max-date="today()->format('Y-m-d')" />
 
                             @error('tanggal_pemeriksaan')
 

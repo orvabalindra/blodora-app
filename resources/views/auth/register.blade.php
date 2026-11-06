@@ -66,6 +66,7 @@
             action="{{ route('register.process') }}"
             method="POST"
             class="auth-form"
+            data-swal-no-confirm="true"
         >
 
             @csrf
@@ -204,7 +205,7 @@
 
                 <span class="btn-loading d-none">
                     <span class="auth-spinner"></span>
-                    Creating account...
+                    Membuat akun...
                 </span>
             </button>
 

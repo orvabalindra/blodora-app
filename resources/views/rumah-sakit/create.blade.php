@@ -231,6 +231,34 @@
 
                     </div>
 
+                    <div class="col-12">
+                        <fieldset class="admin-hospital-account-fields">
+                            <legend class="admin-form-label">Akun login rumah sakit</legend>
+                            <p class="text-muted small">Buat akun untuk petugas rumah sakit agar dapat mengajukan permintaan darah. Bagikan kredensial melalui saluran resmi rumah sakit.</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="username" class="admin-form-label">Nama pengguna</label>
+                                    <input id="username" name="username" class="admin-form-control @error('username') is-invalid @enderror" value="{{ old('username') }}" autocomplete="off" required>
+                                    @error('username')<div class="admin-form-error">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="email" class="admin-form-label">Email akun</label>
+                                    <input type="email" id="email" name="email" class="admin-form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" autocomplete="off" required>
+                                    @error('email')<div class="admin-form-error">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="password" class="admin-form-label">Kata sandi awal</label>
+                                    <input type="password" id="password" name="password" class="admin-form-control @error('password') is-invalid @enderror" minlength="8" autocomplete="new-password" required>
+                                    @error('password')<div class="admin-form-error">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="password_confirmation" class="admin-form-label">Ulangi kata sandi</label>
+                                    <input type="password" id="password_confirmation" name="password_confirmation" class="admin-form-control" minlength="8" autocomplete="new-password" required>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+
                 </div>
 
 

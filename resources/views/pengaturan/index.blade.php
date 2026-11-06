@@ -214,7 +214,7 @@
                     </span>
 
                     <h3>
-                        Tampilan Dasbor
+                        Tampilan Dashboard
                     </h3>
 
                     <p>

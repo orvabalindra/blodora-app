@@ -71,23 +71,10 @@
                         Permintaan Darah
                     </h3>
 
-                    <p>
-                        Daftar permintaan darah dari fasilitas kesehatan.
-                    </p>
+                    <p>Permintaan dikirim oleh akun rumah sakit. Prioritas darurat ditampilkan lebih dahulu.</p>
 
                 </div>
 
-
-                <div class="admin-page-actions">
-
-                    <a
-                        href="{{ route('permintaan-darah.create') }}"
-                        class="admin-btn-primary"
-                    >
-                        + Tambah Permintaan
-                    </a>
-
-                </div>
 
             </div>
 
@@ -96,7 +83,7 @@
             @include('components.admin-list-search', [
                 'action' => route('permintaan-darah.index'),
                 'items' => $permintaanDarahs,
-                'placeholder' => 'Cari nama faskes, golongan darah, atau status',
+                'placeholder' => 'Cari nama faskes, golongan, prioritas, atau status',
             ])
 
             @if (session('success'))
@@ -128,6 +115,7 @@
                             <th>Faskes</th>
                             <th>Tanggal</th>
                             <th>Golongan</th>
+                            <th>Prioritas</th>
                             <th>Jumlah</th>
                             <th>Disalurkan</th>
                             <th>Status</th>
@@ -147,7 +135,6 @@
                                 <td>
                                     {{ $loop->iteration + (($permintaanDarahs->currentPage() - 1) * $permintaanDarahs->perPage()) }}
                                 </td>
-
 
                                 {{-- FASKES --}}
                                 <td>
@@ -174,7 +161,6 @@
 
                                 </td>
 
-
                                 {{-- TANGGAL --}}
                                 <td>
                                     {{ $permintaan->tanggal_permintaan?->format('d M Y') ?? '-' }}
@@ -188,6 +174,12 @@
                                         {{ $permintaan->golongan_darah }}{{ $permintaan->rhesus }}
                                     </span>
 
+                                </td>
+
+                                <td>
+                                    <span class="badge {{ $permintaan->tingkat_kebutuhan === 'darurat' ? 'text-bg-danger' : ($permintaan->tingkat_kebutuhan === 'mendesak' ? 'text-bg-warning' : 'text-bg-light') }}">
+                                        {{ ucfirst($permintaan->tingkat_kebutuhan === 'normal' ? 'terencana' : $permintaan->tingkat_kebutuhan) }}
+                                    </span>
                                 </td>
 
 
@@ -261,24 +253,6 @@
                                         </a>
 
 
-                                        {{-- EDIT --}}
-                                        @if ($permintaan->status === 'diproses')
-                                            <a
-                                                href="{{ route('permintaan-darah.edit', $permintaan) }}"
-                                                class="admin-action-btn edit"
-                                                title="Ubah"
-                                            >
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    aria-hidden="true"
-                                                >
-                                                    <path d="M12 20h9"></path>
-                                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z"></path>
-                                                </svg>
-                                            </a>
-                                        @endif
-
-
                                         {{-- HAPUS --}}
                                         @if ($permintaan->status === 'diproses' && $permintaan->penyalurans_count === 0)
                                             <form
@@ -315,7 +289,7 @@
 
                             <tr>
 
-                                <td colspan="8">
+                                <td colspan="9">
 
                                     <div class="admin-empty-state">
 

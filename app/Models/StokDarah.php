@@ -18,6 +18,8 @@ class StokDarah extends Model
         'pendaftaran_id',
         'golongan_darah',
         'rhesus',
+        'golongan_darah_dikonfirmasi_oleh',
+        'golongan_darah_dikonfirmasi_pada',
         'jumlah_kantong',
         'tanggal_masuk',
         'tanggal_kadaluarsa',
@@ -26,11 +28,17 @@ class StokDarah extends Model
     protected $casts = [
         'tanggal_masuk' => 'date',
         'tanggal_kadaluarsa' => 'date',
+        'golongan_darah_dikonfirmasi_pada' => 'datetime',
     ];
 
     public function pendonor(): BelongsTo
     {
         return $this->belongsTo(Pendonor::class, 'pendonor_id', 'id');
+    }
+
+    public function golonganDarahDikonfirmasiOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'golongan_darah_dikonfirmasi_oleh');
     }
 
     public function pendaftaran(): BelongsTo

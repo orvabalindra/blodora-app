@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dasbor Admin')
+@section('title', 'Dashboard Admin')
 
 @section('content')
 
@@ -31,7 +31,7 @@
                     </span>
 
                     <h1>
-                        Dasbor
+                        Dashboard
                     </h1>
 
                     <p>

@@ -181,10 +181,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource(
-        'permintaan-darah',
-        PermintaanDarahController::class
-    );
+    Route::resource('permintaan-darah', PermintaanDarahController::class)
+        ->only(['index', 'show', 'destroy']);
     Route::patch(
         '/permintaan-darah/{permintaanDarah}/status',
         [PermintaanDarahController::class, 'updateStatus']
@@ -250,6 +248,16 @@ Route::middleware(['auth', 'pendonor'])->group(function () {
         ->name('donor.pendaftaran.destroy');
 
 });
+
+Route::middleware(['auth', 'rumah-sakit'])
+    ->prefix('faskes/permintaan')
+    ->name('faskes.permintaan.')
+    ->group(function () {
+        Route::get('/', [PermintaanDarahController::class, 'hospitalIndex'])->name('index');
+        Route::get('/buat', [PermintaanDarahController::class, 'hospitalCreate'])->name('create');
+        Route::post('/', [PermintaanDarahController::class, 'hospitalStore'])->name('store');
+        Route::get('/{permintaanDarah}', [PermintaanDarahController::class, 'hospitalShow'])->name('show');
+    });
 
 /*
 |--------------------------------------------------------------------------

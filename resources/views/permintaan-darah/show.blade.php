@@ -80,15 +80,6 @@
 
                 <div class="admin-page-actions">
 
-                    @if ($permintaanDarah->status === 'diproses')
-                        <a
-                            href="{{ route('permintaan-darah.edit', $permintaanDarah) }}"
-                            class="admin-btn-primary"
-                        >
-                            Ubah
-                        </a>
-                    @endif
-
                     <a
                         href="{{ route('permintaan-darah.index') }}"
                         class="admin-btn-secondary"
@@ -103,6 +94,12 @@
             @if (session('success'))
                 <div class="admin-form-alert admin-form-alert-success">
                     {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('warning'))
+                <div class="admin-form-alert admin-form-alert-danger">
+                    {{ session('warning') }}
                 </div>
             @endif
 
@@ -122,13 +119,16 @@
                 </div>
             @endif
 
-            @if ($permintaanDarah->status === 'diterima' && $sisaPermintaan > $stokCocokTersedia)
-                <div class="admin-form-alert admin-form-alert-danger" role="alert">
+            @if ($permintaanDarah->status !== 'ditolak' && $sisaPermintaan > $stokCocokTersedia)
+                <div class="admin-stock-shortage-notice" role="status">
                     <strong>Stok belum mencukupi.</strong>
-                    Untuk {{ $permintaanDarah->golongan_darah }}{{ $permintaanDarah->rhesus }} tersedia {{ $stokCocokTersedia }} kantong layak, sementara masih dibutuhkan {{ $sisaPermintaan }} kantong.
+                    Untuk {{ $permintaanDarah->golongan_darah }}{{ $permintaanDarah->rhesus }} tersedia {{ $stokCocokTersedia }} kantong layak, sementara masih dibutuhkan {{ $sisaPermintaan }} kantong. Hubungi rumah sakit untuk menyampaikan ketersediaan dan perkiraan tindak lanjut.
+                    @if ($permintaanDarah->rumahSakit?->no_telp)
+                        <div class="mt-2"><a class="admin-btn-secondary" href="tel:{{ preg_replace('/[^0-9+]/', '', $permintaanDarah->rumahSakit->no_telp) }}"><i class="bi bi-telephone" aria-hidden="true"></i> Hubungi {{ $permintaanDarah->rumahSakit->no_telp }}</a></div>
+                    @endif
                 </div>
             @elseif ($permintaanDarah->status === 'diterima')
-                <div class="admin-form-alert admin-form-alert-success" role="status">
+                <div class="admin-stock-available-notice" role="status">
                     Stok cocok tersedia: {{ $stokCocokTersedia }} kantong. Kebutuhan yang tersisa {{ $sisaPermintaan }} kantong.
                 </div>
             @endif
@@ -175,9 +175,17 @@
                         <strong class="admin-detail-value">
                             {{ $permintaanDarah->rumahSakit->no_telp ?? '-' }}
                         </strong>
+                        @if ($permintaanDarah->rumahSakit->no_telp)
+                            <a class="admin-table-link" href="tel:{{ preg_replace('/[^0-9+]/', '', $permintaanDarah->rumahSakit->no_telp) }}">Telepon rumah sakit</a>
+                        @endif
 
                     @endif
 
+                </div>
+
+                <div class="admin-detail-item">
+                    <span class="admin-detail-label">Tingkat Kebutuhan</span>
+                    <span class="badge {{ $permintaanDarah->tingkat_kebutuhan === 'darurat' ? 'text-bg-danger' : ($permintaanDarah->tingkat_kebutuhan === 'mendesak' ? 'text-bg-warning' : 'text-bg-light') }}">{{ ucfirst($permintaanDarah->tingkat_kebutuhan === 'normal' ? 'terencana' : $permintaanDarah->tingkat_kebutuhan) }}</span>
                 </div>
 
 

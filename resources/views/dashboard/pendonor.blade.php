@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dasbor Pendonor')
+@section('title', 'Dashboard Pendonor')
 
 @section('content')
 
@@ -204,9 +204,7 @@
 
                         <div class="donor-stat-content">
 
-                            <span>
-                                Status Pemeriksaan
-                            </span>
+                            <span>Hasil screening terakhir</span>
 
 
                             @if (
@@ -219,9 +217,10 @@
                                     Layak
                                 </h2>
 
-                                <small>
-                                    Layak untuk donor
+                                <small class="donor-screening-date">
+                                    Diperiksa {{ $pemeriksaanTerakhir->tanggal_pemeriksaan?->translatedFormat('d F Y') ?? 'tanggal tidak tersedia' }}
                                 </small>
+                                <small class="donor-screening-note">Hasil ini hanya untuk pemeriksaan tersebut. Petugas akan menilai kembali kelayakan saat screening berikutnya.</small>
 
                             @elseif (
                                     isset($pemeriksaanTerakhir) &&
@@ -232,9 +231,10 @@
                                     Tidak Layak
                                 </h2>
 
-                                <small>
-                                    Periksa kembali hasil pemeriksaan
+                                <small class="donor-screening-date">
+                                    Diperiksa {{ $pemeriksaanTerakhir->tanggal_pemeriksaan?->translatedFormat('d F Y') ?? 'tanggal tidak tersedia' }}
                                 </small>
+                                <small class="donor-screening-note">Hasil ini merujuk pada pemeriksaan tersebut. Ikuti arahan petugas untuk pemeriksaan berikutnya.</small>
 
                             @else
 

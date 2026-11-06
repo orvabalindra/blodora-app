@@ -145,7 +145,18 @@
                     <strong class="admin-detail-value">
                         {{ $rumahSakit->no_telp }}
                     </strong>
+                    <a class="admin-table-link" href="tel:{{ preg_replace('/[^0-9+]/', '', $rumahSakit->no_telp) }}">Telepon rumah sakit</a>
 
+                </div>
+
+                <div class="admin-detail-item">
+                    <span class="admin-detail-label">Akun Portal Rumah Sakit</span>
+                    @if ($rumahSakit->user)
+                        <strong class="admin-detail-value">{{ $rumahSakit->user->username }}</strong>
+                        <small class="text-muted">{{ $rumahSakit->user->email }}</small>
+                    @else
+                        <strong class="admin-detail-value">Belum dibuat</strong>
+                    @endif
                 </div>
 
 
@@ -167,7 +178,7 @@
                     <form
                         action="{{ route('rumah-sakit.destroy', $rumahSakit) }}"
                         method="POST"
-                        data-swal-confirm="Data faskes ini akan dihapus." data-swal-title="Hapus data faskes?" data-swal-confirm-button="Ya, hapus"
+                        data-swal-confirm="Data faskes dan akun portal rumah sakitnya akan dihapus." data-swal-title="Hapus data faskes?" data-swal-confirm-button="Ya, hapus"
                     >
                         @csrf
                         @method('DELETE')

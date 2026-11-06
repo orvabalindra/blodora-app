@@ -216,6 +216,21 @@
     width: 100%;
 }
 
+.admin-hospital-account-fields {
+    margin: 0;
+    padding: 18px;
+    border: 1px solid var(--admin-border, #e5e7eb);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.admin-hospital-account-fields legend {
+    float: none;
+    width: auto;
+    margin-bottom: 4px;
+    padding: 0 4px;
+}
+
 .admin-donation-completion-form > div,
 .admin-donation-expiry {
     min-width: 0;
@@ -223,6 +238,46 @@
 
 .admin-donation-expiry .admin-date-parts {
     max-width: 420px;
+}
+
+.admin-donation-blood-confirmation {
+    min-width: 0;
+    margin: 0;
+    padding: 14px;
+    border: 1px solid var(--admin-border, #e5e7eb);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.admin-donation-blood-confirmation legend {
+    float: none;
+    width: auto;
+    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.admin-donation-blood-confirmation > p { margin-bottom: 10px; }
+
+.admin-donation-blood-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.admin-donation-blood-attestation {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 12px;
+    color: var(--admin-text, #242832);
+    font-size: 13px;
+}
+
+.admin-donation-blood-attestation input { margin-top: 3px; }
+
+@media (max-width: 575.98px) {
+    .admin-donation-blood-fields { grid-template-columns: 1fr; }
 }
 
 .admin-donation-completion-form > button {
@@ -1803,32 +1858,11 @@
 .admin-report-month-fields > div { min-width: 0; }
 
 .admin-date-parts {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
     width: 100%;
     min-width: 0;
 }
 
-.admin-date-parts > div { min-width: 0; }
-.admin-date-parts select { width: 100%; min-width: 0; padding-right: .75rem; }
-.admin-date-parts .blodora-select { min-width: 0; }
-.admin-date-parts .blodora-select-trigger {
-    gap: 6px;
-    min-width: 0;
-    padding: 9px 8px;
-}
-.admin-date-parts .blodora-select-trigger > span:first-child {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-@media (max-width: 575.98px) {
-    .admin-date-parts { gap: 6px; }
-    .admin-date-parts select { font-size: .875rem; }
-}
+.admin-date-parts .blodora-picker { width: 100%; }
 
 .admin-request-actions {
     align-items: flex-start;
@@ -2466,6 +2500,27 @@
 .admin-form-alert-success {
     background: #ecf9f1;
     border: 1px solid #d5f0df;
+    color: #19713a;
+}
+
+.admin-stock-shortage-notice,
+.admin-stock-available-notice {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid;
+    border-radius: 12px;
+    line-height: 1.5;
+}
+
+.admin-stock-shortage-notice {
+    border-color: #f1c5c8;
+    background: #fff3f3;
+    color: #8f1722;
+}
+
+.admin-stock-available-notice {
+    border-color: #d5f0df;
+    background: #ecf9f1;
     color: #19713a;
 }
 
@@ -3515,6 +3570,22 @@ select.admin-form-select {
 .donor-stat-content small {
     color: #999999;
     font-size: 10px;
+}
+
+.donor-stat-content .donor-screening-date {
+    display: block;
+    margin-top: 6px;
+    color: var(--admin-text, #242832);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.donor-stat-content .donor-screening-note {
+    display: block;
+    margin-top: 5px;
+    color: var(--admin-muted, #777);
+    font-size: 11px;
+    line-height: 1.45;
 }
 
 .donor-stat-date {
@@ -4662,6 +4733,7 @@ select.admin-form-select {
 }
 
 .blodora-picker.is-open { z-index: 1080; }
+.blodora-picker.is-open .blodora-picker-panel { pointer-events: auto; }
 
 .blodora-picker-native {
     position: absolute !important;
@@ -4695,6 +4767,10 @@ select.admin-form-select {
 .blodora-picker-trigger:hover,
 .blodora-picker.is-open .blodora-picker-trigger {
     border-color: var(--admin-red, #c8102e);
+}
+
+.blodora-picker-trigger.is-invalid {
+    border-color: #dc3545;
 }
 
 .blodora-picker-trigger:focus-visible {
@@ -4738,6 +4814,7 @@ select.admin-form-select {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     min-height: 38px;
     margin-bottom: 12px;
     color: #20242b;
@@ -4750,7 +4827,11 @@ select.admin-form-select {
 }
 
 .blodora-picker-title-button {
-    padding: 6px 10px;
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 6px 12px;
     border: 0;
     border-radius: 8px;
     background: #fff1f3;
@@ -4759,6 +4840,8 @@ select.admin-form-select {
     font-weight: 700;
     text-transform: capitalize;
     cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
 }
 
 .blodora-picker-nav {
@@ -4859,41 +4942,68 @@ select.admin-form-select {
 .blodora-picker-today { background: #fff1f3; color: var(--admin-red, #c8102e); }
 
 .blodora-time-fields {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     padding: 8px 0 16px;
 }
 
-.blodora-time-fields label {
+.blodora-time-column {
     display: grid;
-    gap: 6px;
+    min-width: 0;
+    gap: 7px;
+}
+
+.blodora-time-column-label {
     color: #727b87;
     font-size: 11px;
     font-weight: 600;
-    text-align: center;
 }
 
-.blodora-time-fields input {
-    width: 76px;
-    height: 58px;
+.blodora-time-options {
+    display: grid;
+    max-height: 180px;
+    padding: 4px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     border: 1px solid #e2e5e9;
-    border-radius: 12px;
-    background: #fff8f9;
-    color: #242832;
-    font-size: 24px;
-    font-weight: 700;
-    text-align: center;
+    border-radius: 10px;
+    background: #ffffff;
+    scrollbar-width: thin;
 }
 
-.blodora-time-fields input:focus {
+.blodora-time-option {
+    min-height: 36px;
+    width: 100%;
+    min-width: 0;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #333943;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.blodora-time-option:hover,
+.blodora-time-option:focus-visible {
     outline: 0;
-    border-color: var(--admin-red, #c8102e);
-    box-shadow: 0 0 0 3px rgb(200 16 46 / 12%);
+    background: #fff1f3;
+    color: var(--admin-red, #c8102e);
 }
 
-.blodora-time-fields > span { padding-bottom: 12px; color: var(--admin-red, #c8102e); font-size: 24px; font-weight: 700; }
+.blodora-time-option.is-selected {
+    background: var(--admin-red, #c8102e);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.blodora-time-error {
+    margin: 0;
+    color: #b42332;
+    font-size: 12px;
+}
 
 .blodora-time-presets {
     display: flex;

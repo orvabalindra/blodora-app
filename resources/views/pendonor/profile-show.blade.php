@@ -291,7 +291,7 @@
                 href="{{ route('dashboard.pendonor') }}"
                 class="donor-btn-secondary"
             >
-                Kembali ke Dasbor
+                Kembali ke Dashboard
             </a>
 
         </div>

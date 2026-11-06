@@ -19,6 +19,7 @@ class PermintaanDarah extends Model
         'rhesus',
         'jumlah_minta',
         'jumlah_terpenuhi',
+        'tingkat_kebutuhan',
         'status',
     ];
 

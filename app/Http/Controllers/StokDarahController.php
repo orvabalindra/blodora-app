@@ -108,6 +108,7 @@ class StokDarahController extends Controller
         $stokDarah->load([
             'pendonor',
             'pendaftaran',
+            'golonganDarahDikonfirmasiOleh',
             'penyalurans.permintaanDarah.rumahSakit',
         ]);
 

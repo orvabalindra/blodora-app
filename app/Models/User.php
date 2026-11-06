@@ -27,4 +27,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pendonor::class);
     }
+
+    public function rumahSakit(): HasOne
+    {
+        return $this->hasOne(RumahSakit::class, 'user_id', 'id');
+    }
 }

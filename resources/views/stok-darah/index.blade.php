@@ -70,10 +70,6 @@
                             Daftar Stok Darah
                         </h3>
 
-                        <p>
-                            Total {{ $stokDarah->count() }} data stok.
-                        </p>
-
                     </div>
 
                 </div>
@@ -184,6 +180,17 @@
 
                                                         <td>
                                                             {{ $stok->tanggal_kadaluarsa->format('d/m/Y') }}
+                                                            <div class="mt-1">
+                                                                @if ($stok->jumlah_kantong <= 0)
+                                                                    <span class="badge rounded-pill text-bg-secondary">Habis</span>
+                                                                @elseif ($stok->tanggal_kadaluarsa->lt(today()))
+                                                                    <span class="badge rounded-pill text-bg-danger">Kedaluwarsa</span>
+                                                                @elseif ($stok->tanggal_kadaluarsa->lte(today()->copy()->addDays(30)))
+                                                                    <span class="badge rounded-pill text-bg-warning">Segera kedaluwarsa</span>
+                                                                @else
+                                                                    <span class="badge rounded-pill text-bg-success">Aktif</span>
+                                                                @endif
+                                                            </div>
                                                         </td>
 
                                                         <td>

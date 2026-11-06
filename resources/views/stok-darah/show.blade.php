@@ -158,6 +158,20 @@
 
                 </div>
 
+                <div class="admin-detail-item">
+                    <span class="admin-detail-label">Konfirmasi Golongan Darah</span>
+                    @if ($stokDarah->golongan_darah_dikonfirmasi_pada)
+                        <strong class="admin-detail-value">Dikonfirmasi petugas</strong>
+                        <small class="text-muted">
+                            {{ $stokDarah->golonganDarahDikonfirmasiOleh?->username ?? 'Akun petugas tidak tersedia' }}
+                            · {{ $stokDarah->golongan_darah_dikonfirmasi_pada->translatedFormat('d F Y, H:i') }}
+                        </small>
+                    @else
+                        <strong class="admin-detail-value">Belum ada catatan konfirmasi</strong>
+                        <small class="text-muted">Stok ini tercatat sebelum konfirmasi petugas diterapkan.</small>
+                    @endif
+                </div>
+
 
                 {{-- JUMLAH KANTONG --}}
                 <div class="admin-detail-item">

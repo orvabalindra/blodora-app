@@ -31,7 +31,7 @@ function showPageFeedback() {
 function initializeSweetAlertConfirmations() {
     document.addEventListener('submit', function (event) {
         const form = event.target.closest('form');
-        if (!form || form.dataset.swalConfirmed === 'true') return;
+        if (!form || form.dataset.swalConfirmed === 'true' || form.dataset.swalNoConfirm === 'true') return;
 
         const method = (form.getAttribute('method') || 'get').toUpperCase();
         const needsConfirmation = Boolean(form.dataset.swalConfirm) || !['GET', 'DIALOG'].includes(method);
@@ -159,6 +159,7 @@ function initializeThemedPickers() {
         const trigger = document.createElement('button');
         trigger.type = 'button';
         trigger.className = 'blodora-picker-trigger';
+        trigger.classList.toggle('is-invalid', input.classList.contains('is-invalid'));
         trigger.disabled = input.disabled;
         trigger.id = input.id ? `${input.id}-picker` : `blodora-picker-${index}`;
         trigger.setAttribute('aria-haspopup', 'dialog');
@@ -185,13 +186,21 @@ function initializeThemedPickers() {
 
         const panel = document.createElement('div');
         panel.className = `blodora-picker-panel blodora-picker-${type}`;
+        panel.id = `${trigger.id}-panel`;
         panel.setAttribute('role', 'dialog');
         panel.setAttribute('aria-label', type === 'time' ? 'Pilih waktu' : type === 'month' ? 'Pilih bulan' : 'Pilih tanggal');
         panel.hidden = true;
+        trigger.setAttribute('aria-controls', panel.id);
         wrapper.append(trigger, panel);
+
+        // Keep clicks inside the floating panel from being treated as outside clicks.
+        panel.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
 
         let viewDate = new Date();
         let showYearPicker = false;
+        let showMonthPicker = false;
         const pad = number => String(number).padStart(2, '0');
         const localIso = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
         const parseIso = raw => {
@@ -254,16 +263,38 @@ function initializeThemedPickers() {
                 ? String(viewDate.getFullYear())
                 : showYearPicker
                     ? 'Pilih tahun'
-                    : new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(viewDate);
+                    : showMonthPicker
+                        ? 'Pilih bulan'
+                        : new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(viewDate);
             let yearButton = null;
+            let monthButton = null;
             if (type === 'date') {
                 yearButton = document.createElement('button');
                 yearButton.type = 'button';
                 yearButton.className = 'blodora-picker-title-button';
                 yearButton.setAttribute('aria-label', 'Pilih tahun');
+                yearButton.setAttribute('aria-haspopup', 'grid');
+                yearButton.setAttribute('aria-expanded', String(showYearPicker));
                 yearButton.innerHTML = `${showYearPicker ? `${Math.floor(viewDate.getFullYear() / 10) * 10 - 1}–${Math.floor(viewDate.getFullYear() / 10) * 10 + 10}` : viewDate.getFullYear()} <i class="bi bi-chevron-down" aria-hidden="true"></i>`;
-                yearButton.addEventListener('click', function () {
+                yearButton.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     showYearPicker = !showYearPicker;
+                    showMonthPicker = false;
+                    renderCalendar();
+                });
+                monthButton = document.createElement('button');
+                monthButton.type = 'button';
+                monthButton.className = 'blodora-picker-title-button';
+                monthButton.setAttribute('aria-label', 'Pilih bulan');
+                monthButton.setAttribute('aria-haspopup', 'grid');
+                monthButton.setAttribute('aria-expanded', String(showMonthPicker));
+                monthButton.innerHTML = `${new Intl.DateTimeFormat('id-ID', { month: 'short' }).format(viewDate)} <i class="bi bi-chevron-down" aria-hidden="true"></i>`;
+                monthButton.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    showMonthPicker = !showMonthPicker;
+                    showYearPicker = false;
                     renderCalendar();
                 });
             }
@@ -277,6 +308,8 @@ function initializeThemedPickers() {
                     ? new Date(viewDate.getFullYear() - 1, 0, 1)
                     : showYearPicker
                         ? new Date(viewDate.getFullYear() - 10, viewDate.getMonth(), 1)
+                        : showMonthPicker
+                            ? new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1)
                         : new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
                 renderCalendar();
             });
@@ -285,10 +318,14 @@ function initializeThemedPickers() {
                     ? new Date(viewDate.getFullYear() + 1, 0, 1)
                     : showYearPicker
                         ? new Date(viewDate.getFullYear() + 10, viewDate.getMonth(), 1)
+                        : showMonthPicker
+                            ? new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1)
                         : new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
                 renderCalendar();
             });
-            header.append(previous, title);
+            header.append(previous);
+            if (type === 'date' && monthButton) header.appendChild(monthButton);
+            else header.appendChild(title);
             if (yearButton) header.appendChild(yearButton);
             header.appendChild(next);
             panel.appendChild(header);
@@ -303,22 +340,12 @@ function initializeThemedPickers() {
                     button.type = 'button';
                     button.className = 'blodora-picker-day';
                     button.textContent = String(year);
-                    button.classList.toggle('is-selected', input.value.startsWith(`${year}-`));
+                    button.classList.toggle('is-selected', viewDate.getFullYear() === year);
                     const minYear = input.min ? Number(input.min.slice(0, 4)) : null;
                     const maxYear = input.max ? Number(input.max.slice(0, 4)) : null;
                     button.disabled = Boolean((minYear !== null && year < minYear) || (maxYear !== null && year > maxYear));
                     button.addEventListener('click', function () {
-                        const currentDate = input.value ? parseIso(input.value) : viewDate;
                         const month = viewDate.getMonth();
-                        const lastDay = new Date(year, month + 1, 0).getDate();
-                        const selectedDate = new Date(year, month, Math.min(currentDate.getDate(), lastDay));
-                        const selectedIso = localIso(selectedDate);
-                        const selectedDateAllowed = (!input.min || selectedIso >= input.min)
-                            && (!input.max || selectedIso <= input.max);
-                        if (!selectedDateAllowed) return;
-                        input.value = selectedIso;
-                        emitChange();
-                        updateValue();
                         viewDate = new Date(year, month, 1);
                         showYearPicker = false;
                         renderCalendar();
@@ -326,6 +353,30 @@ function initializeThemedPickers() {
                     years.appendChild(button);
                 }
                 panel.appendChild(years);
+                return;
+            }
+
+            if (showMonthPicker && type === 'date') {
+                const months = document.createElement('div');
+                months.className = 'blodora-picker-month-grid';
+                const minMonth = input.min ? input.min.slice(0, 7) : null;
+                const maxMonth = input.max ? input.max.slice(0, 7) : null;
+                for (let month = 0; month < 12; month++) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'blodora-picker-day';
+                    button.textContent = new Intl.DateTimeFormat('id-ID', { month: 'short' }).format(new Date(viewDate.getFullYear(), month, 1));
+                    const monthValue = `${viewDate.getFullYear()}-${pad(month + 1)}`;
+                    button.classList.toggle('is-selected', viewDate.getMonth() === month);
+                    button.disabled = Boolean((minMonth && monthValue < minMonth) || (maxMonth && monthValue > maxMonth));
+                    button.addEventListener('click', function () {
+                        viewDate = new Date(viewDate.getFullYear(), month, 1);
+                        showMonthPicker = false;
+                        renderCalendar();
+                    });
+                    months.appendChild(button);
+                }
+                panel.appendChild(months);
                 return;
             }
 
@@ -407,27 +458,48 @@ function initializeThemedPickers() {
             const fields = document.createElement('div');
             fields.className = 'blodora-time-fields';
             const [currentHour = '', currentMinute = ''] = input.value.split(':');
-            const hour = document.createElement('input');
-            hour.type = 'text';
-            hour.inputMode = 'numeric';
-            hour.maxLength = 2;
-            hour.placeholder = '09';
-            hour.value = currentHour;
-            hour.setAttribute('aria-label', 'Jam');
-            const colon = document.createElement('span');
-            colon.textContent = ':';
-            const minute = document.createElement('input');
-            minute.type = 'text';
-            minute.inputMode = 'numeric';
-            minute.maxLength = 2;
-            minute.placeholder = '30';
-            minute.value = currentMinute;
-            minute.setAttribute('aria-label', 'Menit');
-            const hourLabel = document.createElement('label');
-            hourLabel.append('Jam', hour);
-            const minuteLabel = document.createElement('label');
-            minuteLabel.append('Menit', minute);
-            fields.append(hourLabel, colon, minuteLabel);
+            let selectedHour = currentHour;
+            let selectedMinute = currentMinute;
+
+            function buildTimeColumn(label, count, getSelected, setSelected) {
+                const column = document.createElement('div');
+                column.className = 'blodora-time-column';
+                const heading = document.createElement('span');
+                heading.className = 'blodora-time-column-label';
+                heading.textContent = label;
+                const options = document.createElement('div');
+                options.className = 'blodora-time-options';
+                options.setAttribute('role', 'group');
+                options.setAttribute('aria-label', label);
+
+                for (let value = 0; value < count; value++) {
+                    const optionValue = pad(value);
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.className = 'blodora-time-option';
+                    option.textContent = optionValue;
+                    option.setAttribute('aria-pressed', String(getSelected() === optionValue));
+                    option.classList.toggle('is-selected', getSelected() === optionValue);
+                    option.addEventListener('click', function () {
+                        setSelected(optionValue);
+                        panel.querySelector('.blodora-time-error')?.remove();
+                        options.querySelectorAll('.blodora-time-option').forEach(button => {
+                            const selected = button === option;
+                            button.classList.toggle('is-selected', selected);
+                            button.setAttribute('aria-pressed', String(selected));
+                        });
+                    });
+                    options.appendChild(option);
+                }
+
+                column.append(heading, options);
+                return column;
+            }
+
+            fields.append(
+                buildTimeColumn('Jam', 24, () => selectedHour, value => { selectedHour = value; }),
+                buildTimeColumn('Menit', 60, () => selectedMinute, value => { selectedMinute = value; }),
+            );
             panel.appendChild(fields);
 
             const presets = document.createElement('div');
@@ -438,8 +510,14 @@ function initializeThemedPickers() {
                 option.className = 'blodora-picker-day';
                 option.textContent = time;
                 option.addEventListener('click', function () {
-                    hour.value = time.slice(0, 2);
-                    minute.value = time.slice(3);
+                    selectedHour = time.slice(0, 2);
+                    selectedMinute = time.slice(3);
+                    panel.querySelector('.blodora-time-error')?.remove();
+                    fields.querySelectorAll('.blodora-time-option').forEach(button => {
+                        const selected = button.textContent === selectedHour || button.textContent === selectedMinute;
+                        button.classList.toggle('is-selected', selected);
+                        button.setAttribute('aria-pressed', String(selected));
+                    });
                 });
                 presets.appendChild(option);
             });
@@ -452,20 +530,29 @@ function initializeThemedPickers() {
             save.className = 'blodora-picker-apply';
             save.textContent = 'Pilih waktu';
             save.addEventListener('click', function () {
-                const h = Number(hour.value);
-                const m = Number(minute.value);
-                if (!/^\d{1,2}$/.test(hour.value) || !/^\d{1,2}$/.test(minute.value) || h > 23 || m > 59) {
-                    hour.setCustomValidity('Masukkan jam 00–23 dan menit 00–59.');
-                    hour.reportValidity();
+                if (!selectedHour || !selectedMinute) {
+                    let error = panel.querySelector('.blodora-time-error');
+                    if (!error) {
+                        error = document.createElement('p');
+                        error.className = 'blodora-time-error';
+                        error.setAttribute('role', 'alert');
+                        panel.insertBefore(error, footer);
+                    }
+                    error.textContent = !selectedHour ? 'Pilih jam terlebih dahulu.' : 'Pilih menit terlebih dahulu.';
                     return;
                 }
-                const nextValue = `${pad(h)}:${pad(m)}`;
+                const nextValue = `${selectedHour}:${selectedMinute}`;
                 if ((input.min && nextValue < input.min.slice(0, 5)) || (input.max && nextValue > input.max.slice(0, 5))) {
-                    hour.setCustomValidity('Waktu berada di luar batas yang diizinkan.');
-                    hour.reportValidity();
+                    let error = panel.querySelector('.blodora-time-error');
+                    if (!error) {
+                        error = document.createElement('p');
+                        error.className = 'blodora-time-error';
+                        error.setAttribute('role', 'alert');
+                        panel.insertBefore(error, footer);
+                    }
+                    error.textContent = 'Waktu berada di luar batas yang diizinkan.';
                     return;
                 }
-                hour.setCustomValidity('');
                 input.value = nextValue;
                 emitChange();
                 updateValue();
@@ -481,15 +568,25 @@ function initializeThemedPickers() {
             if (type === 'time') renderTime();
             else {
                 showYearPicker = false;
+                showMonthPicker = false;
                 if (input.value) viewDate = parseIso(input.value);
-                else if (input.min) viewDate = parseIso(input.min);
-                else viewDate = new Date();
+                else {
+                    const todayIso = localIso(new Date());
+                    if (input.min && todayIso < input.min) viewDate = parseIso(input.min);
+                    else if (input.max && todayIso > input.max) viewDate = parseIso(input.max);
+                    else viewDate = new Date();
+                }
                 viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
                 renderCalendar();
             }
             panel.hidden = false;
             wrapper.classList.add('is-open');
             trigger.setAttribute('aria-expanded', 'true');
+            panel.querySelectorAll('.blodora-time-options').forEach(options => {
+                const selected = options.querySelector('.is-selected');
+                if (!selected) return;
+                options.scrollTop = Math.max(0, selected.offsetTop - options.offsetTop - (options.clientHeight / 2) + (selected.clientHeight / 2));
+            });
         }
 
         function closePicker() {
@@ -508,7 +605,13 @@ function initializeThemedPickers() {
             }
             if (event.key === 'Escape') closePicker();
         });
-        input.addEventListener('change', updateValue);
+        input.addEventListener('change', function () {
+            updateValue();
+            if (input.checkValidity()) {
+                trigger.classList.remove('is-invalid');
+                trigger.removeAttribute('aria-invalid');
+            }
+        });
         input.form?.addEventListener('reset', () => window.setTimeout(updateValue, 0));
         document.addEventListener('click', event => { if (!wrapper.contains(event.target)) closePicker(); });
         document.addEventListener('keydown', event => { if (event.key === 'Escape') closePicker(); });

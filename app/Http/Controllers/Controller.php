@@ -45,6 +45,20 @@ abstract class Controller
                 : redirect()->route('pendonor.profile.create');
         }
 
+        if ($user?->role === 'rumah_sakit') {
+            if ($user->rumahSakit) {
+                return redirect()->route('faskes.permintaan.index');
+            }
+
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors([
+                'username' => 'Akun rumah sakit belum ditautkan ke data fasilitas. Hubungi admin.',
+            ]);
+        }
+
         return redirect()->route('home');
     }
 }

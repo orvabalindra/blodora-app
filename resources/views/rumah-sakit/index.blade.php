@@ -128,6 +128,7 @@
                             <th>Nama Faskes</th>
                             <th>Alamat</th>
                             <th>No. Telepon</th>
+                            <th>Akun Portal</th>
                             <th>Aksi</th>
                         </tr>
 
@@ -182,7 +183,16 @@
 
                                 {{-- TELEPON --}}
                                 <td>
-                                    {{ $rumahSakit->no_telp }}
+                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $rumahSakit->no_telp) }}">{{ $rumahSakit->no_telp }}</a>
+                                </td>
+
+                                <td>
+                                    @if ($rumahSakit->user)
+                                        <span class="admin-status-pill success">Aktif</span>
+                                        <small class="d-block text-muted">{{ $rumahSakit->user->username }}</small>
+                                    @else
+                                        <span class="admin-status-pill warning">Belum dibuat</span>
+                                    @endif
                                 </td>
 
 
@@ -228,7 +238,7 @@
                                             <form
                                                 action="{{ route('rumah-sakit.destroy', $rumahSakit) }}"
                                                 method="POST"
-                                                data-swal-confirm="Data faskes ini akan dihapus." data-swal-title="Hapus data faskes?" data-swal-confirm-button="Ya, hapus"
+                                                data-swal-confirm="Data faskes dan akun portal rumah sakitnya akan dihapus." data-swal-title="Hapus data faskes?" data-swal-confirm-button="Ya, hapus"
                                             >
                                                 @csrf
                                                 @method('DELETE')
@@ -255,7 +265,7 @@
 
                             <tr>
 
-                                <td colspan="5">
+                                <td colspan="6">
 
                                     <div class="admin-empty-state">
 
